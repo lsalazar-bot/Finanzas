@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Impuestos — Coordinación de Impuestos</title>
-<link rel="icon" type="image/png" href="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/wAARCADIAMgDASIAAhEBAxEB/8QAHAABAAMBAQEBAQAAAAAAAAAAAAUGBwQDAgH/xAA4EAABAwMCBAQEBAUFAAAAAAABAAIDBAURBiExEkFRYQcTInGBkRQyobHBFSNCUmLR8BYkQ3L/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A/fIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiID//Z">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Clash+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
@@ -33,6 +32,8 @@
   .topbar-brand{font-family:var(--font-display);font-weight:800;font-size:19px;letter-spacing:.04em;color:var(--text);white-space:nowrap}
   .topbar-brand span{color:var(--accent)}
   .topbar-meta{color:var(--muted);font-size:13px;font-weight:400;padding-left:4px}
+  .topbar-sep{margin-right:6px}
+  .topbar-coord{color:#fff;font-weight:700;letter-spacing:.01em}
   .topbar-spacer{flex:1}
   .topbar-date{color:var(--muted);font-size:12px;font-family:var(--font-mono);white-space:nowrap}
 
@@ -141,6 +142,15 @@
     .month-row{grid-template-columns:repeat(2,1fr)}
   }
 </style>
+<script>
+(function(){
+  var link = document.createElement('link');
+  link.rel = 'icon';
+  link.type = 'image/png';
+  link.href = 'data:image/png;base64,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';
+  document.head.appendChild(link);
+})();
+</script>
 </head>
 <body>
 
@@ -150,7 +160,7 @@
   </div>
   <div class="topbar-divider"></div>
   <div class="topbar-brand">ANDROMEDA <span>FINANZAS</span></div>
-  <div class="topbar-meta">/ Coordinación de Impuestos</div>
+  <div class="topbar-meta"><span class="topbar-sep">/</span> <span class="topbar-coord">Coordinación de Impuestos</span></div>
   <div class="topbar-spacer"></div>
   <div class="topbar-date" id="now-date"></div>
 </div>
