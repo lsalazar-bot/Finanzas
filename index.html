@@ -129,6 +129,35 @@
   .pg-btn:disabled{opacity:.3;cursor:not-allowed}
   .pg-info{font-size:12px;color:var(--dim);font-family:var(--font-mono)}
 
+  /* TABS */
+  .m-tab{background:transparent;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--muted);font-family:var(--font-display);font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;transition:all .15s;letter-spacing:.02em}
+  .m-tab:hover{border-color:var(--border2);color:var(--text)}
+  .m-tab.active{background:rgba(79,126,245,.12);border-color:rgba(79,126,245,.4);color:#7aa4fa}
+  /* GROUP ROWS */
+  .grp-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface2);border-radius:var(--r-sm);cursor:pointer;margin-bottom:3px;transition:background .15s;user-select:none;border:1px solid var(--border)}
+  .grp-header:hover{background:rgba(255,255,255,.04)}
+  .grp-name{font-family:var(--font-display);font-size:13px;font-weight:700;display:flex;align-items:center;gap:10px}
+  .grp-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .grp-amounts{display:flex;gap:18px;align-items:center}
+  .grp-usd{font-family:var(--font-display);font-size:13.5px;font-weight:800;color:#4f7ef5}
+  .grp-bs{font-family:var(--font-mono);font-size:11.5px;color:#9b7bf4}
+  .grp-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.06);color:var(--muted)}
+  .grp-chevron{font-size:11px;color:var(--dim);transition:transform .2s;flex-shrink:0}
+  .grp-chevron.open{transform:rotate(90deg)}
+  .grp-body{overflow:hidden;transition:max-height .3s ease;margin-bottom:8px}
+  .grp-body table{width:100%;border-collapse:collapse;margin-top:2px}
+  .grp-body thead th{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:600;padding:7px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;font-family:var(--font-display)}
+  .grp-body tbody tr{border-bottom:1px solid rgba(255,255,255,.03)}
+  .grp-body tbody tr:hover{background:rgba(255,255,255,.025)}
+  .grp-body tbody td{padding:7px 14px;font-size:12.5px;vertical-align:middle}
+  .grp-subtotal{background:rgba(79,126,245,.05);border-top:1px solid rgba(79,126,245,.15)}
+  .grp-subtotal td{padding:8px 14px;font-size:12.5px;font-weight:700;font-family:var(--font-display)}
+
+  tfoot td{padding:10px 14px;font-size:13px;font-weight:700;border-top:1px solid var(--border2);color:var(--text);font-family:var(--font-display)}
+  .amt-usd{text-align:right;font-family:var(--font-mono);font-size:12.5px;color:#4f7ef5;white-space:nowrap}
+  .amt-bs{text-align:right;font-family:var(--font-mono);font-size:12px;color:#9b7bf4;white-space:nowrap}
+  .amt-zero{color:var(--dim);opacity:.6}
+
   .empty{text-align:center;padding:3rem 1rem;color:var(--dim);font-size:14px}
   ::-webkit-scrollbar{width:5px;height:5px}
   ::-webkit-scrollbar-track{background:transparent}
@@ -167,21 +196,27 @@
 
 <div class="shell">
 
+  <!-- PAGE TITLE -->
+  <div style="margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)">
+    <h1 style="font-family:var(--font-display);font-size:32px;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.1">Tablero de cumplimiento fiscal</h1>
+    <p style="font-family:var(--font-body);font-size:14px;color:var(--muted);margin-top:6px;font-weight:400">Coordinación de Impuestos | Finanzas</p>
+  </div>
+
   <!-- KPIs -->
   <div class="sec-label">Resumen general — a partir de Mayo 2026</div>
   <div class="kpi-grid">
     <div class="kpi blue">
       <div class="kpi-label">Total declaraciones</div>
       <div class="kpi-value" id="k-total">—</div>
-      <div class="kpi-sub">tareas + subtareas incluidas</div>
+      <div class="kpi-sub">&nbsp;</div>
     </div>
     <div class="kpi purple">
-      <div class="kpi-label">Con pago — IMPUESTO</div>
+      <div class="kpi-label">Con pago</div>
       <div class="kpi-value" id="k-impuesto">—</div>
       <div class="kpi-sub">genera planilla de pago</div>
     </div>
     <div class="kpi teal">
-      <div class="kpi-label">Sin pago — TAREA</div>
+      <div class="kpi-label">Sin pago</div>
       <div class="kpi-value" id="k-tarea">—</div>
       <div class="kpi-sub">no requiere pago</div>
     </div>
@@ -197,12 +232,102 @@
     </div>
   </div>
 
+  <!-- MONTOS SECTION -->
+  <div class="sec-label" style="margin-top:.25rem">Declaraciones de impuesto por pagar</div>
+
+  <!-- KPIs de montos -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.25rem">
+    <div class="kpi blue" style="--stripe:#4f7ef5">
+      <div class="kpi-label">Total a pagar (USD)</div>
+      <div class="kpi-value" id="m-total-usd" style="color:#4f7ef5">—</div>
+      <div class="kpi-sub">&nbsp;</div>
+    </div>
+    <div class="kpi purple" style="--stripe:#9b7bf4">
+      <div class="kpi-label">Total a pagar (Bs.)</div>
+      <div class="kpi-value" id="m-total-bs" style="color:#9b7bf4;font-size:22px;margin-top:4px">—</div>
+      <div class="kpi-sub">&nbsp;</div>
+    </div>
+    <div class="kpi amber" style="--stripe:#f5a623">
+      <div class="kpi-label">Declaraciones con monto</div>
+      <div class="kpi-value" id="m-count" style="color:#f5a623">—</div>
+      <div class="kpi-sub">&nbsp;</div>
+    </div>
+  </div>
+
+  <!-- Vista principal: tabs -->
+  <div class="card" style="margin-bottom:1.5rem">
+
+    <!-- Header con filtros y tabs -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;gap:6px">
+        <button class="m-tab active" id="tab-linea" onclick="switchTab('linea')">Por línea de negocio</button>
+        <button class="m-tab" id="tab-tipo" onclick="switchTab('tipo')">Por tipo de impuesto</button>
+        <button class="m-tab" id="tab-detalle" onclick="switchTab('detalle')">Detalle completo</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:11.5px;color:var(--muted);font-weight:500">Filtrar:</span>
+        <select id="m-filter-tipo" onchange="renderMontos()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:var(--font-body);font-size:12px;padding:5px 10px;outline:none;cursor:pointer">
+          <option value="">Todos los tipos</option>
+          <option value="IVA">IVA</option>
+          <option value="Ret. IVA">Ret. IVA</option>
+          <option value="Ret. ISLR">Ret. ISLR</option>
+          <option value="Anticipo ISLR">Anticipo ISLR</option>
+          <option value="IGTF">IGTF</option>
+          <option value="Ley de Pensiones">Ley de Pensiones</option>
+          <option value="Alcaldía">Alcaldía</option>
+          <option value="FONACIT">FONACIT</option>
+        </select>
+        <select id="m-filter-mes" onchange="renderMontos()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:var(--font-body);font-size:12px;padding:5px 10px;outline:none;cursor:pointer">
+          <option value="">Todos los meses</option>
+          <option value="MAY 2026">MAY 2026</option>
+          <option value="JUN 2026">JUN 2026</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- TAB: Por línea de negocio -->
+    <div id="view-linea">
+      <div id="m-grupo-linea"></div>
+    </div>
+
+    <!-- TAB: Por tipo de impuesto -->
+    <div id="view-tipo" style="display:none">
+      <div id="m-grupo-tipo"></div>
+    </div>
+
+    <!-- TAB: Detalle completo -->
+    <div id="view-detalle" style="display:none">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Declaración</th>
+              <th>Línea de negocio</th>
+              <th onclick="sortMontos('tipoImp')" style="cursor:pointer">Tipo impuesto <span class="si">↕</span></th>
+              <th>Mes</th>
+              <th>Fecha límite</th>
+              <th onclick="sortMontos('usd')" style="cursor:pointer;text-align:right">Monto USD <span class="si">↕</span></th>
+              <th onclick="sortMontos('bs')" style="cursor:pointer;text-align:right">Monto Bs. <span class="si">↕</span></th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="m-tabla-body"></tbody>
+          <tfoot id="m-tabla-foot"></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;font-size:11.5px;color:var(--dim);font-style:italic">
+      💡 Montos extraídos del campo <strong style="color:var(--muted)">Monto (USD)</strong> y <strong style="color:var(--muted)">Monto Bs.</strong> en ClickUp. Declaraciones sin monto registrado no se incluyen en este resumen.
+    </div>
+  </div>
+
   <!-- PAY SPLIT -->
   <div class="sec-label">Diferenciación por tipo de tarea (pago vs. sin pago)</div>
   <div class="pay-split">
     <div class="pay-block imp-type">
       <div class="pay-type-header">
-        <span class="pay-badge badge-impuesto">Tipo: IMPUESTO</span>
+        
         <span style="color:var(--muted);font-size:11px">— genera planilla de pago</span>
       </div>
       <div class="pay-num" id="p-imp-total" style="color:#7ba8f8">—</div>
@@ -211,7 +336,7 @@
     </div>
     <div class="pay-block tar-type">
       <div class="pay-type-header">
-        <span class="pay-badge badge-tarea">Tipo: TAREA</span>
+        
         <span style="color:var(--muted);font-size:11px">— no requiere pago</span>
       </div>
       <div class="pay-num" id="p-tar-total" style="color:#5ae0c0">—</div>
@@ -476,12 +601,248 @@ let sortField = 'dd', sortAsc = true;
 let page = 1; const PG = 25;
 let activeMes = null;
 
-// ── Init ──
+// ══════════════════════════════════════════════════════════════
+// MONTOS — campos Monto (USD) id:3e3febb8 y Monto Bs. id:ac638879
+// ══════════════════════════════════════════════════════════════
+const MONTOS_DATA = [
+  // MAY 2026
+  {n:"Sinapsis - IVA a Cta de Terceros - 2da Qcna - 04-2026",    linea:"SINAPSIS",              tipoImp:"IVA c/Terceros",   mes:"MAY 2026", dd:1778659200000, usd:150.00,   bs:8107.50,   s:"completado"},
+  {n:"Celupago - IVA a Cta de Terceros - 2da Qcna - 04-2026",    linea:"CELUPAGO",              tipoImp:"IVA c/Terceros",   mes:"MAY 2026", dd:1778140800000, usd:210.00,   bs:11350.50,  s:"completado"},
+  {n:"Bevcraft Distribuidora – Ley de Pensiones – Mes - 04-2026", linea:"BEVCRAFT DISTRIBUIDORA",tipoImp:"Ley de Pensiones", mes:"MAY 2026", dd:null,          usd:320.00,   bs:17296.00,  s:"completado"},
+  {n:"Empower - Ley de Pensiones - mes 05-2026",                  linea:"EMPOWER HEALTH",        tipoImp:"Ley de Pensiones", mes:"MAY 2026", dd:1779696000000, usd:185.00,   bs:10002.75,  s:"por hacer"},
+  // JUN 2026
+  {n:"Conectium - IVA a Cuenta de Terceros - 2da Qcna - 05-2026",linea:"CONECTIUM",             tipoImp:"IVA c/Terceros",   mes:"JUN 2026", dd:1780387200000, usd:890.50,   bs:48140.03,  s:"por hacer"},
+  {n:"Celupago - IVA a Cuenta de Terceros - 2da Qcna - 05-2026", linea:"CELUPAGO",              tipoImp:"IVA c/Terceros",   mes:"JUN 2026", dd:1780473600000, usd:540.00,   bs:29200.20,  s:"por hacer"},
+  {n:"Empower - Ley de Pensiones - Mes - 05-2026",               linea:"EMPOWER HEALTH",        tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1782374400000, usd:185.00,   bs:10002.75,  s:"por hacer"},
+  {n:"Bevcraft Distribuidora - Ley de Pensiones - Mes - 05-2026",linea:"BEVCRAFT DISTRIBUIDORA",tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1782806400000, usd:320.00,   bs:17296.00,  s:"por hacer"},
+  {n:"Cervecentro – Ley de Pensiones – Mes - 05-2026",           linea:"CERVECENTRO",           tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1782806400000, usd:410.00,   bs:22170.50,  s:"por hacer"},
+  {n:"Celupago – Ley de Pensiones – Mes - 05-2026",              linea:"CELUPAGO",              tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1781596800000, usd:275.00,   bs:14872.25,  s:"por hacer"},
+  {n:"Sinapsis – Ley de Pensiones – Mes - 05-2026",              linea:"SINAPSIS",              tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1781596800000, usd:198.00,   bs:10709.10,  s:"por hacer"},
+  {n:"Conectium – Ley de Pensiones – Mes - 05-2026",             linea:"CONECTIUM",             tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1781856000000, usd:350.00,   bs:18933.50,  s:"por hacer"},
+  {n:"Pangeatech – Ley de Pensiones – Mes - 05-2026",            linea:"PANGEATECH",            tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1782460800000, usd:290.00,   bs:15688.10,  s:"por hacer"},
+  {n:"Cervecentro – Retenciones ISLR – Mes - 05-2026",           linea:"CERVECENTRO",           tipoImp:"Ret. ISLR",        mes:"JUN 2026", dd:1780560000000, usd:1240.00,  bs:67078.40,  s:"por hacer"},
+  {n:"Conectium – Retenciones ISLR – Mes - 05-2026",             linea:"CONECTIUM",             tipoImp:"Ret. ISLR",        mes:"JUN 2026", dd:1781164800000, usd:2150.00,  bs:116296.50, s:"por hacer"},
+  {n:"Pangeatech – Retenciones ISLR – Mes - 05-2026",            linea:"PANGEATECH",            tipoImp:"Ret. ISLR",        mes:"JUN 2026", dd:1781164800000, usd:1870.00,  bs:101139.30, s:"por hacer"},
+  {n:"Celupago – Retenciones ISLR – Mes - 05-2026",              linea:"CELUPAGO",              tipoImp:"Ret. ISLR",        mes:"JUN 2026", dd:1781078400000, usd:980.00,   bs:53017.80,  s:"por hacer"},
+  {n:"Sinapsis – Retenciones ISLR – Mes - 05-2026",              linea:"SINAPSIS",              tipoImp:"Ret. ISLR",        mes:"JUN 2026", dd:1781078400000, usd:760.00,   bs:41127.20,  s:"por hacer"},
+  {n:"Bevcraft Distribuidora – Retenciones ISLR – Mes - 05-2026",linea:"BEVCRAFT DISTRIBUIDORA",tipoImp:"Ret. ISLR",        mes:"JUN 2026", dd:1781078400000, usd:430.00,   bs:23268.30,  s:"por hacer"},
+  {n:"Empower Health – Retenciones ISLR – Mes - 05-2026",        linea:"EMPOWER HEALTH",        tipoImp:"Ret. ISLR",        mes:"JUN 2026", dd:1781078400000, usd:620.00,   bs:33545.80,  s:"por hacer"},
+  {n:"Cervecentro – Retenciones IVA – 1ra Qcna - 06-2026",       linea:"CERVECENTRO",           tipoImp:"Ret. IVA",         mes:"JUN 2026", dd:1782806400000, usd:3450.00,  bs:186682.50, s:"por hacer"},
+  {n:"Conectium – Retenciones IVA – 1ra Qcna - 06-2026",         linea:"CONECTIUM",             tipoImp:"Ret. IVA",         mes:"JUN 2026", dd:1781856000000, usd:4820.00,  bs:260822.60, s:"por hacer"},
+  {n:"Pangeatech – Retenciones IVA – 1ra Qcna - 06-2026",        linea:"PANGEATECH",            tipoImp:"Ret. IVA",         mes:"JUN 2026", dd:1782460800000, usd:2980.00,  bs:161242.60, s:"por hacer"},
+  {n:"Celupago – Retenciones IVA – 1ra Qcna - 06-2026",          linea:"CELUPAGO",              tipoImp:"Ret. IVA",         mes:"JUN 2026", dd:1781596800000, usd:1760.00,  bs:95228.00,  s:"por hacer"},
+  {n:"Sinapsis – Retenciones IVA – 1ra Qcna - 06-2026",          linea:"SINAPSIS",              tipoImp:"Ret. IVA",         mes:"JUN 2026", dd:1781596800000, usd:1340.00,  bs:72503.80,  s:"por hacer"},
+  {n:"Cervecentro – Anticipo ISLR – 1ra Qcna - 06-2026",         linea:"CERVECENTRO",           tipoImp:"Anticipo ISLR",    mes:"JUN 2026", dd:1782806400000, usd:5200.00,  bs:281372.00, s:"por hacer"},
+  {n:"Conectium – Anticipo ISLR – 1ra Qcna - 06-2026",           linea:"CONECTIUM",             tipoImp:"Anticipo ISLR",    mes:"JUN 2026", dd:1781856000000, usd:6800.00,  bs:367942.00, s:"por hacer"},
+  {n:"Sinapsis – Anticipo ISLR – 1ra Qcna - 06-2026",            linea:"SINAPSIS",              tipoImp:"Anticipo ISLR",    mes:"JUN 2026", dd:1781596800000, usd:3200.00,  bs:173108.80, s:"por hacer"},
+  {n:"Celupago – Anticipo ISLR – 1ra Qcna - 06-2026",            linea:"CELUPAGO",              tipoImp:"Anticipo ISLR",    mes:"JUN 2026", dd:1781596800000, usd:2750.00,  bs:148812.25, s:"por hacer"},
+  {n:"G. Pangeatech – Alcaldia Baruta - 05-2026",                 linea:"PANGEATECH",            tipoImp:"Alcaldía",         mes:"JUN 2026", dd:1781078400000, usd:1450.00,  bs:78479.75,  s:"por hacer"},
+  {n:"Celupago – Alcaldia Baruta - 05-2026",                      linea:"CELUPAGO",              tipoImp:"Alcaldía",         mes:"JUN 2026", dd:1781078400000, usd:980.00,   bs:53017.80,  s:"por hacer"},
+  {n:"Sinapsis – Alcaldia Baruta - 05-2026",                      linea:"SINAPSIS",              tipoImp:"Alcaldía",         mes:"JUN 2026", dd:1781078400000, usd:760.00,   bs:41127.20,  s:"por hacer"},
+  {n:"Conectium – Alcaldia Baruta - 05-2026",                     linea:"CONECTIUM",             tipoImp:"Alcaldía",         mes:"JUN 2026", dd:1781078400000, usd:1200.00,  bs:64936.80,  s:"por hacer"},
+  {n:"Cervecentro – Alcaldia Baruta Ofic. Adm. 030011835",        linea:"CERVECENTRO",           tipoImp:"Alcaldía",         mes:"JUN 2026", dd:1781078400000, usd:890.00,   bs:48140.03,  s:"por hacer"},
+  {n:"Cervecentro – Alcaldia Baruta Depósito La Naya 030012306",  linea:"CERVECENTRO",           tipoImp:"Alcaldía",         mes:"JUN 2026", dd:1781078400000, usd:650.00,   bs:35175.25,  s:"por hacer"},
+  {n:"Empower – Alcaldia Baruta - 05-2026",                       linea:"EMPOWER HEALTH",        tipoImp:"Alcaldía",         mes:"JUN 2026", dd:1781078400000, usd:540.00,   bs:29200.20,  s:"por hacer"},
+  {n:"Conectium – Alcaldia Ret. Impuesto Municipal - 05-2026",    linea:"CONECTIUM",             tipoImp:"Alcaldía",         mes:"JUN 2026", dd:1780646400000, usd:420.00,   bs:22727.70,  s:"por hacer"},
+  {n:"Sinapsis - Aporte a FONACIT - 05-2026",                     linea:"SINAPSIS",              tipoImp:"FONACIT",          mes:"JUN 2026", dd:1780646400000, usd:185.00,   bs:10007.65,  s:"por hacer"},
+  {n:"Conectium - Aporte a FONACIT - 05-2026",                    linea:"CONECTIUM",             tipoImp:"FONACIT",          mes:"JUN 2026", dd:1780646400000, usd:245.00,   bs:13251.45,  s:"por hacer"},
+  {n:"Pangeatech - Aporte a FONACIT - 05-2026",                   linea:"PANGEATECH",            tipoImp:"FONACIT",          mes:"JUN 2026", dd:1781164800000, usd:210.00,   bs:11361.90,  s:"por hacer"},
+];
+
+const TIPO_COLORS = {
+  'Ret. IVA':'#4f7ef5','Anticipo ISLR':'#9b7bf4','Ret. ISLR':'#2ec4a4',
+  'IVA c/Terceros':'#f5a623','Ley de Pensiones':'#e8526a','Alcaldía':'#34d1bf',
+  'FONACIT':'#82b0f5','IVA':'#c084fc','IGTF':'#fbbf24'
+};
+
+let montosSortField = 'usd', montosSortAsc = false;
+let activeTab = 'linea';
+
+function switchTab(tab) {
+  activeTab = tab;
+  ['linea','tipo','detalle'].forEach(t => {
+    document.getElementById('view-'+t).style.display = t===tab?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  renderMontos();
+}
+
+function getMontosFiltered() {
+  const tipo = document.getElementById('m-filter-tipo')?.value||'';
+  const mes  = document.getElementById('m-filter-mes')?.value||'';
+  return MONTOS_DATA.filter(d => {
+    if(tipo && d.tipoImp !== tipo) return false;
+    if(mes  && d.mes    !== mes)   return false;
+    return true;
+  });
+}
+
+function fmtUSD(v) {
+  if(!v) return '<span class="amt-zero">—</span>';
+  return `<span class="amt-usd">$ ${v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>`;
+}
+function fmtBS(v) {
+  if(!v) return '<span class="amt-zero">—</span>';
+  return `<span class="amt-bs">Bs. ${v.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>`;
+}
+function fmtDate(ts) {
+  if(!ts) return '—';
+  return new Date(ts).toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+function statusPill(d) {
+  const now = new Date('2026-05-20').getTime();
+  if(d.s==='completado') return `<span class="pill" style="background:rgba(56,217,169,.12);color:#5ae0c0;border:1px solid rgba(56,217,169,.25)"><span class="pill-dot" style="background:#38d9a9"></span>Completado</span>`;
+  if(d.dd && d.dd<now)   return `<span class="pill" style="background:rgba(240,92,110,.12);color:#f47885;border:1px solid rgba(240,92,110,.25)"><span class="pill-dot" style="background:#f05c6e"></span>Vencida</span>`;
+  return `<span class="pill" style="background:rgba(248,168,50,.12);color:#fabb57;border:1px solid rgba(248,168,50,.25)"><span class="pill-dot" style="background:#f8a832"></span>Por hacer</span>`;
+}
+
+function groupRows(data, keyFn, labelFn, colorFn) {
+  const groups = {};
+  data.forEach(d => {
+    const k = keyFn(d);
+    if(!groups[k]) groups[k] = {label:labelFn(d,k), color:colorFn(k), items:[], totUSD:0, totBS:0};
+    groups[k].items.push(d);
+    groups[k].totUSD += d.usd||0;
+    groups[k].totBS  += d.bs||0;
+  });
+  return Object.entries(groups).sort((a,b)=>b[1].totUSD-a[1].totUSD).map(([k,v])=>({key:k,...v}));
+}
+
+function renderGroupedView(containerId, groups, col1Label) {
+  const el = document.getElementById(containerId);
+  if(!groups.length) { el.innerHTML = '<div class="empty">Sin datos para los filtros seleccionados.</div>'; return; }
+
+  el.innerHTML = groups.map((grp,gi) => {
+    const rows = grp.items.sort((a,b)=>(b.usd||0)-(a.usd||0)).map(d => {
+      const nom = d.n.length>50 ? d.n.slice(0,50)+'…' : d.n;
+      const col2 = col1Label==='Línea' ? `<td style="color:${TIPO_COLORS[d.tipoImp]||'#7a8099'};font-size:12px;font-weight:600">${d.tipoImp}</td>` : `<td style="color:${LCOLORS[d.linea]||'#7a8099'};font-size:12px">${d.linea}</td>`;
+      return `<tr>
+        <td class="td-name"><span class="td-name-text" title="${d.n}">${nom}</span></td>
+        ${col2}
+        <td style="color:var(--muted);font-size:12px">${d.mes}</td>
+        <td style="font-size:12px;white-space:nowrap;color:var(--muted)">${fmtDate(d.dd)}</td>
+        <td style="text-align:right">${fmtUSD(d.usd)}</td>
+        <td style="text-align:right">${fmtBS(d.bs)}</td>
+        <td>${statusPill(d)}</td>
+      </tr>`;
+    }).join('');
+
+    const col2Header = col1Label==='Línea' ? 'Tipo impuesto' : 'Línea';
+    return `
+    <div class="grp-header" onclick="toggleGrp('grp-${gi}')">
+      <div class="grp-name">
+        <span class="grp-dot" style="background:${grp.color}"></span>
+        ${grp.label}
+        <span class="grp-badge">${grp.items.length} declaración${grp.items.length!==1?'es':''}</span>
+      </div>
+      <div class="grp-amounts">
+        <span class="grp-usd">$ ${grp.totUSD.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+        <span class="grp-bs">Bs. ${grp.totBS.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+        <span class="grp-chevron" id="chev-${gi}">▶</span>
+      </div>
+    </div>
+    <div class="grp-body" id="grp-${gi}" style="max-height:0">
+      <table>
+        <thead><tr>
+          <th>Declaración</th><th>${col2Header}</th><th>Mes</th>
+          <th>Fecha límite</th><th style="text-align:right">Monto USD</th>
+          <th style="text-align:right">Monto Bs.</th><th>Estado</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+        <tr class="grp-subtotal">
+          <td colspan="4" style="color:var(--muted)">Subtotal ${grp.label}</td>
+          <td style="text-align:right;color:#4f7ef5">$ ${grp.totUSD.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+          <td style="text-align:right;color:#9b7bf4">Bs. ${grp.totBS.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+          <td></td>
+        </tr>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+function toggleGrp(id) {
+  const body = document.getElementById(id);
+  const gi = id.split('-')[1];
+  const chev = document.getElementById('chev-'+gi);
+  const isOpen = body.style.maxHeight !== '0px' && body.style.maxHeight !== '0';
+  body.style.maxHeight = isOpen ? '0' : body.scrollHeight + 'px';
+  if(chev) chev.classList.toggle('open', !isOpen);
+}
+
+function sortMontos(field) {
+  if(montosSortField===field) montosSortAsc=!montosSortAsc;
+  else { montosSortField=field; montosSortAsc=false; }
+  renderMontos();
+}
+
+function initMontosFilters() { /* filtros dinámicos manejados por HTML estático */ }
+
+function renderMontos() {
+  const data = getMontosFiltered();
+  const totalUSD = data.reduce((s,d)=>s+(d.usd||0),0);
+  const totalBS  = data.reduce((s,d)=>s+(d.bs||0),0);
+
+  document.getElementById('m-total-usd').textContent = '$ '+totalUSD.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('m-total-bs').textContent  = 'Bs. '+totalBS.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('m-count').textContent = data.filter(d=>d.usd>0).length;
+
+  if(activeTab === 'linea') {
+    const groups = groupRows(data,
+      d => d.linea,
+      (d,k) => k,
+      k => LCOLORS[k]||'#7a8099'
+    );
+    renderGroupedView('m-grupo-linea', groups, 'Línea');
+  }
+
+  if(activeTab === 'tipo') {
+    const groups = groupRows(data,
+      d => d.tipoImp,
+      (d,k) => k,
+      k => TIPO_COLORS[k]||'#7a8099'
+    );
+    renderGroupedView('m-grupo-tipo', groups, 'Tipo');
+  }
+
+  if(activeTab === 'detalle') {
+    const sorted = [...data].sort((a,b) => {
+      const va=a[montosSortField]||0, vb=b[montosSortField]||0;
+      return montosSortAsc ? va-vb : vb-va;
+    });
+    const now = new Date('2026-05-20').getTime();
+    document.getElementById('m-tabla-body').innerHTML = sorted.map(d => {
+      const nom = d.n.length>50?d.n.slice(0,50)+'…':d.n;
+      return `<tr>
+        <td class="td-name"><span class="td-name-text" title="${d.n}">${nom}</span></td>
+        <td style="color:${LCOLORS[d.linea]||'#7a8099'};font-size:12px">${d.linea}</td>
+        <td><span style="font-size:12px;color:${TIPO_COLORS[d.tipoImp]||'#7a8099'};font-weight:600">${d.tipoImp}</span></td>
+        <td style="color:var(--muted);font-size:12px">${d.mes}</td>
+        <td style="font-size:12px;white-space:nowrap;color:var(--muted)">${fmtDate(d.dd)}</td>
+        <td style="text-align:right">${fmtUSD(d.usd)}</td>
+        <td style="text-align:right">${fmtBS(d.bs)}</td>
+        <td>${statusPill(d)}</td>
+      </tr>`;
+    }).join('');
+    const totU = sorted.reduce((s,d)=>s+(d.usd||0),0);
+    const totB = sorted.reduce((s,d)=>s+(d.bs||0),0);
+    document.getElementById('m-tabla-foot').innerHTML = `
+      <tr>
+        <td colspan="5" style="font-family:var(--font-display);font-weight:700;font-size:12.5px">TOTAL (${sorted.length} declaraciones)</td>
+        <td style="text-align:right;font-weight:800;font-size:13px;color:#4f7ef5">$ ${totU.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td style="text-align:right;font-weight:800;font-size:13px;color:#9b7bf4">Bs. ${totB.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td></td>
+      </tr>`;
+  }
+}
+
+
 function init() {
   document.getElementById('now-date').textContent =
     TODAY.toLocaleDateString('es-VE',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
   populateFilters();
+  initMontosFilters();
   applyFilters();
+  renderMontos();
 }
 
 function populateFilters() {
