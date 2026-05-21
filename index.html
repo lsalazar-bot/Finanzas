@@ -35,7 +35,7 @@
   .topbar-sep{margin-right:6px}
   .topbar-coord{color:#fff;font-weight:700;letter-spacing:.01em}
   .topbar-spacer{flex:1}
-  .topbar-date{color:var(--muted);font-size:12px;font-family:var(--font-mono);white-space:nowrap}
+  .topbar-date{display:flex;align-items:center;gap:2px;white-space:nowrap;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;padding:4px 11px}
 
   /* LAYOUT */
   .shell{max-width:1340px;margin:0 auto;padding:2.25rem 2.5rem 5rem}
@@ -191,7 +191,7 @@
   <div class="topbar-brand">ANDROMEDA <span>FINANZAS</span></div>
   <div class="topbar-meta"><span class="topbar-sep">/</span> <span class="topbar-coord">Coordinación de Impuestos</span></div>
   <div class="topbar-spacer"></div>
-  <div class="topbar-date" id="now-date"></div>
+  <div class="topbar-date"><span style="color:var(--dim);font-size:11px;margin-right:5px">Actualizado</span><span id="now-date"></span></div>
 </div>
 
 <div class="shell">
@@ -659,7 +659,7 @@ const RAW = [
 ];
 
 // ── Enriquecer datos ──
-const TODAY = new Date('2026-05-20');
+const TODAY = new Date();
 RAW.forEach(t => {
   t.linea   = extractLinea(t.n);
   t.tipoImp = extractTipoImp(t.n);
@@ -783,7 +783,7 @@ function fmtDate(ts) {
   return new Date(ts).toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});
 }
 function statusPill(d) {
-  const now = new Date('2026-05-20').getTime();
+  const now = new Date().getTime();
   if(d.s==='completado') return `<span class="pill" style="background:rgba(56,217,169,.12);color:#5ae0c0;border:1px solid rgba(56,217,169,.25)"><span class="pill-dot" style="background:#38d9a9"></span>Completado</span>`;
   if(d.dd && d.dd<now)   return `<span class="pill" style="background:rgba(240,92,110,.12);color:#f47885;border:1px solid rgba(240,92,110,.25)"><span class="pill-dot" style="background:#f05c6e"></span>Vencida</span>`;
   return `<span class="pill" style="background:rgba(248,168,50,.12);color:#fabb57;border:1px solid rgba(248,168,50,.25)"><span class="pill-dot" style="background:#f8a832"></span>Por hacer</span>`;
@@ -902,7 +902,7 @@ function renderMontos() {
       const va=a[montosSortField]||0, vb=b[montosSortField]||0;
       return montosSortAsc ? va-vb : vb-va;
     });
-    const now = new Date('2026-05-20').getTime();
+    const now = new Date().getTime();
     document.getElementById('m-tabla-body').innerHTML = sorted.map(d => {
       const nom = d.n.length>50?d.n.slice(0,50)+'…':d.n;
       return `<tr>
@@ -930,8 +930,12 @@ function renderMontos() {
 
 
 function init() {
-  document.getElementById('now-date').textContent =
-    TODAY.toLocaleDateString('es-VE',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  const _now = new Date();
+  const _opts = {day:'2-digit', month:'short', year:'numeric'};
+  const _dateStr = _now.toLocaleDateString('es-VE', _opts);
+  const _el = document.getElementById('now-date');
+  _el.textContent = _dateStr;
+  _el.style.cssText = 'font-family:var(--font-display);font-weight:600;font-size:12px;color:var(--text);letter-spacing:.01em';
   populateFilters();
   initMontosFilters();
   applyFilters();
