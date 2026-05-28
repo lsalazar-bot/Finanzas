@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Impuestos — Coordinación de Impuestos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Clash+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+  :root {
+    --bg:#0a0c10; --surface:#111318; --surface2:#181c24;
+    --border:rgba(255,255,255,.06); --border2:rgba(255,255,255,.11);
+    --text:#e8ecf4; --muted:#6b7794; --dim:#3d4560;
+    --accent:#4f7ef5; --accent2:#2ec4a4; --warn:#f5a623; --danger:#e8526a; --purple:#9b7bf4;
+    --r:12px; --r-sm:8px;
+    --font-display:'Plus Jakarta Sans', sans-serif;
+    --font-body:'Plus Jakarta Sans', sans-serif;
+    --font-mono:'SF Mono','Fira Code','Cascadia Code',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+
+  /* LOGO */
+  .topbar-logo-wrap{display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .topbar-logo-img{width:36px;height:36px;object-fit:contain;mix-blend-mode:screen;filter:brightness(1.15)}
+
+  /* TOPBAR */
+  .topbar{position:sticky;top:0;z-index:100;background:rgba(10,12,16,.95);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:0 2.5rem;display:flex;align-items:center;gap:1.4rem;height:66px}
+  .topbar-divider{width:1px;height:28px;background:var(--border2);flex-shrink:0}
+  .topbar-brand{font-family:var(--font-display);font-weight:800;font-size:19px;letter-spacing:.04em;color:var(--text);white-space:nowrap}
+  .topbar-brand span{color:var(--accent)}
+  .topbar-meta{color:var(--muted);font-size:13px;font-weight:400;padding-left:4px}
+  .topbar-sep{margin-right:6px}
+  .topbar-coord{color:#fff;font-weight:700;letter-spacing:.01em}
+  .topbar-spacer{flex:1}
+  .topbar-date{display:flex;align-items:center;gap:2px;white-space:nowrap;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;padding:4px 11px}
+
+  /* LAYOUT */
+  .shell{max-width:1340px;margin:0 auto;padding:2.25rem 2.5rem 5rem}
+  .sec-label{font-family:var(--font-display);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:1.1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+
+  /* KPI */
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:2.25rem}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem 1.25rem 1.15rem;position:relative;overflow:hidden;transition:border-color .2s,transform .15s}
+  .kpi:hover{border-color:var(--border2);transform:translateY(-1px)}
+  .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--stripe,#4f7ef5)}
+  .kpi-label{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px}
+  .kpi-value{font-family:var(--font-display);font-size:34px;font-weight:800;line-height:1;color:var(--kcolor,var(--text));letter-spacing:-.02em}
+  .kpi-sub{font-size:12px;color:var(--dim);margin-top:7px;font-weight:400}
+  .kpi.blue{--stripe:#4f7ef5;--kcolor:#4f7ef5}
+  .kpi.green{--stripe:#2ec4a4;--kcolor:#2ec4a4}
+  .kpi.amber{--stripe:#f5a623;--kcolor:#f5a623}
+  .kpi.purple{--stripe:#9b7bf4;--kcolor:#9b7bf4}
+  .kpi.teal{--stripe:#2ec4a4;--kcolor:#2ec4a4}
+
+  /* CARD */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem 1.75rem}
+
+  /* PAY SPLIT */
+  .pay-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.75rem}
+  .pay-block{background:var(--surface2);border-radius:var(--r);padding:1.4rem 1.75rem;border:1px solid var(--border);transition:border-color .2s}
+  .pay-block.imp-type{border-color:rgba(79,126,245,.3)}
+  .pay-block.tar-type{border-color:rgba(46,196,164,.3)}
+  .pay-type-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+  .pay-badge{font-size:10.5px;font-weight:700;letter-spacing:.1em;padding:4px 12px;border-radius:20px;text-transform:uppercase;font-family:var(--font-display)}
+  .badge-impuesto{background:rgba(79,126,245,.14);color:#7aa4fa;border:1px solid rgba(79,126,245,.3)}
+  .badge-tarea{background:rgba(46,196,164,.14);color:#4dd9bd;border:1px solid rgba(46,196,164,.3)}
+  .pay-num{font-family:var(--font-display);font-size:44px;font-weight:800;line-height:1;letter-spacing:-.03em}
+  .pay-desc{font-size:13px;color:var(--muted);margin-top:6px;font-weight:400}
+  .pay-pct{font-size:13px;margin-top:10px;color:var(--muted);font-weight:500}
+
+  /* MONTH HEATMAP */
+  .month-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+  .month-cell{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:1rem .75rem .85rem;text-align:center;cursor:pointer;transition:border-color .2s,transform .15s}
+  .month-cell:hover{border-color:var(--border2);transform:translateY(-1px)}
+  .month-cell.active{border-color:var(--accent);background:rgba(79,126,245,.07)}
+  .mc-name{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;font-family:var(--font-display)}
+  .mc-total{font-family:var(--font-display);font-size:28px;font-weight:800;line-height:1;letter-spacing:-.02em}
+  .mc-sub{font-size:11px;color:var(--dim);margin-top:5px;font-weight:400}
+  .mc-bar{height:3px;border-radius:2px;margin-top:8px}
+
+  /* SPLIT ROW */
+  .split-row{display:grid;grid-template-columns:1.2fr .8fr;gap:1.25rem;margin-bottom:1.75rem}
+
+  /* BAR */
+  .hbar-list{display:flex;flex-direction:column;gap:10px}
+  .hbar-row{display:flex;align-items:center;gap:10px}
+  .hbar-name{width:165px;flex-shrink:0;color:var(--muted);font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hbar-track{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+  .hbar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+  .hbar-count-split{display:flex;gap:5px;align-items:center;min-width:58px;justify-content:flex-end}
+  .hbar-imp{font-size:12px;color:var(--accent);font-weight:700;font-family:var(--font-display)}
+  .hbar-tar{font-size:12px;color:var(--accent2);font-weight:700;font-family:var(--font-display)}
+
+  /* FILTERS */
+  .filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.35rem}
+  .filter-bar label{font-size:12px;font-weight:600;color:var(--muted)}
+  .filter-bar select,.filter-bar input{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:var(--font-body);font-size:13px;padding:6px 11px;outline:none;cursor:pointer}
+  .filter-bar select:focus,.filter-bar input:focus{border-color:var(--accent)}
+  .filter-bar input{width:200px}
+  .btn-reset{background:transparent;border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--muted);font-family:var(--font-body);font-size:13px;font-weight:600;padding:6px 14px;cursor:pointer;transition:all .15s}
+  .btn-reset:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* TABLE */
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;padding:11px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;cursor:pointer;user-select:none;font-family:var(--font-display)}
+  thead th:hover{color:var(--text)}
+  thead th.sorted .si{color:var(--accent);opacity:1}
+  .si{opacity:.4;margin-left:4px}
+  tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .1s}
+  tbody tr:hover{background:rgba(255,255,255,.028)}
+  tbody td{padding:10px 14px;font-size:13.5px;vertical-align:middle;font-weight:400}
+  .td-name{max-width:260px}
+  .td-name-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;font-weight:500}
+  .td-date.expired{color:var(--danger)}
+  .td-date.soon{color:var(--warn)}
+  .td-resp{color:var(--muted);font-size:12.5px;white-space:nowrap;font-weight:500}
+  .td-tipo{font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 10px;border-radius:20px;white-space:nowrap;font-family:var(--font-display)}
+  .pill-dot{width:6px;height:6px;border-radius:50%}
+
+  /* PAGINATION */
+  .pagination{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:14px}
+  .pg-btn{background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:var(--font-body);font-size:12.5px;font-weight:600;padding:5px 13px;cursor:pointer;transition:all .15s}
+  .pg-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+  .pg-btn:disabled{opacity:.3;cursor:not-allowed}
+  .pg-info{font-size:12px;color:var(--dim);font-family:var(--font-mono)}
+
+  /* TABS */
+  .m-tab{background:transparent;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--muted);font-family:var(--font-display);font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;transition:all .15s;letter-spacing:.02em}
+  .m-tab:hover{border-color:var(--border2);color:var(--text)}
+  .m-tab.active{background:rgba(79,126,245,.12);border-color:rgba(79,126,245,.4);color:#7aa4fa}
+  /* GROUP ROWS */
+  .grp-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface2);border-radius:var(--r-sm);cursor:pointer;margin-bottom:3px;transition:background .15s;user-select:none;border:1px solid var(--border)}
+  .grp-header:hover{background:rgba(255,255,255,.04)}
+  .grp-name{font-family:var(--font-display);font-size:13px;font-weight:700;display:flex;align-items:center;gap:10px}
+  .grp-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .grp-amounts{display:flex;gap:18px;align-items:center}
+  .grp-usd{font-family:var(--font-display);font-size:13.5px;font-weight:800;color:#4f7ef5}
+  .grp-bs{font-family:var(--font-mono);font-size:11.5px;color:#9b7bf4}
+  .grp-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.06);color:var(--muted)}
+  .grp-chevron{font-size:11px;color:var(--dim);transition:transform .2s;flex-shrink:0}
+  .grp-chevron.open{transform:rotate(90deg)}
+  .grp-body{overflow:hidden;transition:max-height .3s ease;margin-bottom:8px}
+  .grp-body table{width:100%;border-collapse:collapse;margin-top:2px}
+  .grp-body thead th{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:600;padding:7px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;font-family:var(--font-display)}
+  .grp-body tbody tr{border-bottom:1px solid rgba(255,255,255,.03)}
+  .grp-body tbody tr:hover{background:rgba(255,255,255,.025)}
+  .grp-body tbody td{padding:7px 14px;font-size:12.5px;vertical-align:middle}
+  .grp-subtotal{background:rgba(79,126,245,.05);border-top:1px solid rgba(79,126,245,.15)}
+  .grp-subtotal td{padding:8px 14px;font-size:12.5px;font-weight:700;font-family:var(--font-display)}
+
+  tfoot td{padding:10px 14px;font-size:13px;font-weight:700;border-top:1px solid var(--border2);color:var(--text);font-family:var(--font-display)}
+  .amt-usd{text-align:right;font-family:var(--font-mono);font-size:12.5px;color:#4f7ef5;white-space:nowrap}
+  .amt-bs{text-align:right;font-family:var(--font-mono);font-size:12px;color:#9b7bf4;white-space:nowrap}
+  .amt-zero{color:var(--dim);opacity:.6}
+
+  .empty{text-align:center;padding:3rem 1rem;color:var(--dim);font-size:14px}
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--dim)}
+
+  @media(max-width:900px){
+    .kpi-grid{grid-template-columns:repeat(3,1fr)}
+    .split-row{grid-template-columns:1fr}
+    .pay-split{grid-template-columns:1fr}
+    .month-row{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+<script>
+(function(){
+  var link = document.createElement('link');
+  link.rel = 'icon';
+  link.type = 'image/png';
+  link.href = 'data:image/png;base64,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';
+  document.head.appendChild(link);
+})();
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo-wrap">
+    <img src="data:image/png;base64,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" alt="Andromeda" class="topbar-logo-img">
+  </div>
+  <div class="topbar-divider"></div>
+  <div class="topbar-brand">ANDROMEDA <span>FINANZAS</span></div>
+  <div class="topbar-meta"><span class="topbar-sep">/</span> <span class="topbar-coord">Coordinación de Impuestos</span></div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-date"><span style="color:var(--dim);font-size:11px;margin-right:5px">Actualizado</span><span id="now-date"></span></div>
+</div>
+
+<div class="shell">
+
+  <!-- PAGE TITLE -->
+  <div style="margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)">
+    <h1 style="font-family:var(--font-display);font-size:32px;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.1">Tablero de cumplimiento fiscal</h1>
+    <p style="font-family:var(--font-body);font-size:14px;color:var(--muted);margin-top:6px;font-weight:400">Coordinación de Impuestos | Finanzas</p>
+  </div>
+
+  <!-- KPIs -->
+  <div class="sec-label">Resumen general — a partir de Mayo 2026</div>
+  <div class="kpi-grid">
+    <div class="kpi blue">
+      <div class="kpi-label">Total declaraciones</div>
+      <div class="kpi-value" id="k-total">—</div>
+      <div class="kpi-sub">&nbsp;</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">Con pago</div>
+      <div class="kpi-value" id="k-impuesto">—</div>
+      <div class="kpi-sub">genera planilla de pago</div>
+    </div>
+    <div class="kpi teal">
+      <div class="kpi-label">Sin pago</div>
+      <div class="kpi-value" id="k-tarea">—</div>
+      <div class="kpi-sub">no requiere pago</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Completadas</div>
+      <div class="kpi-value" id="k-done">—</div>
+      <div class="kpi-sub" id="k-done-pct">—</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-label">Por hacer</div>
+      <div class="kpi-value" id="k-todo">—</div>
+      <div class="kpi-sub">pendientes de ejecutar</div>
+    </div>
+  </div>
+
+  <!-- MONTOS SECTION -->
+  <div class="sec-label" style="margin-top:.25rem">Declaraciones de impuesto por pagar</div>
+
+  <!-- KPIs de montos -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.25rem">
+    <div class="kpi blue" style="--stripe:#4f7ef5">
+      <div class="kpi-label">Total a pagar (USD)</div>
+      <div class="kpi-value" id="m-total-usd" style="color:#4f7ef5">—</div>
+      <div class="kpi-sub">&nbsp;</div>
+    </div>
+    <div class="kpi purple" style="--stripe:#9b7bf4">
+      <div class="kpi-label">Total a pagar (Bs.)</div>
+      <div class="kpi-value" id="m-total-bs" style="color:#9b7bf4;font-size:22px;margin-top:4px">—</div>
+      <div class="kpi-sub">&nbsp;</div>
+    </div>
+    <div class="kpi amber" style="--stripe:#f5a623">
+      <div class="kpi-label">Declaraciones con monto</div>
+      <div class="kpi-value" id="m-count" style="color:#f5a623">—</div>
+      <div class="kpi-sub">&nbsp;</div>
+    </div>
+  </div>
+
+  <!-- Vista principal: tabs -->
+  <div class="card" style="margin-bottom:1.5rem">
+
+    <!-- Header con filtros y tabs -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;gap:6px">
+        <button class="m-tab active" id="tab-linea" onclick="switchTab('linea')">Por línea de negocio</button>
+        <button class="m-tab" id="tab-tipo" onclick="switchTab('tipo')">Por tipo de impuesto</button>
+        <button class="m-tab" id="tab-detalle" onclick="switchTab('detalle')">Detalle completo</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:11.5px;color:var(--muted);font-weight:500">Filtrar:</span>
+        <select id="m-filter-tipo" onchange="renderMontos()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:var(--font-body);font-size:12px;padding:5px 10px;outline:none;cursor:pointer">
+          <option value="">Todos los tipos</option>
+          <option value="IVA">IVA</option>
+          <option value="Ret. IVA">Ret. IVA</option>
+          <option value="Ret. ISLR">Ret. ISLR</option>
+          <option value="Anticipo ISLR">Anticipo ISLR</option>
+          <option value="IGTF">IGTF</option>
+          <option value="Ley de Pensiones">Ley de Pensiones</option>
+          <option value="Alcaldía">Alcaldía</option>
+          <option value="FONACIT">FONACIT</option>
+        </select>
+        <select id="m-filter-mes" onchange="renderMontos()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:var(--font-body);font-size:12px;padding:5px 10px;outline:none;cursor:pointer">
+          <option value="">Todos los meses</option>
+          <option value="MAY 2026">MAY 2026</option>
+          <option value="JUN 2026">JUN 2026</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- TAB: Por línea de negocio -->
+    <div id="view-linea">
+      <div id="m-grupo-linea"></div>
+    </div>
+
+    <!-- TAB: Por tipo de impuesto -->
+    <div id="view-tipo" style="display:none">
+      <div id="m-grupo-tipo"></div>
+    </div>
+
+    <!-- TAB: Detalle completo -->
+    <div id="view-detalle" style="display:none">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Declaración</th>
+              <th>Línea de negocio</th>
+              <th onclick="sortMontos('tipoImp')" style="cursor:pointer">Tipo impuesto <span class="si">↕</span></th>
+              <th>Mes</th>
+              <th>Fecha límite</th>
+              <th onclick="sortMontos('usd')" style="cursor:pointer;text-align:right">Monto USD <span class="si">↕</span></th>
+              <th onclick="sortMontos('bs')" style="cursor:pointer;text-align:right">Monto Bs. <span class="si">↕</span></th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="m-tabla-body"></tbody>
+          <tfoot id="m-tabla-foot"></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;font-size:11.5px;color:var(--dim);font-style:italic">
+      💡 Montos extraídos del campo <strong style="color:var(--muted)">Monto (USD)</strong> y <strong style="color:var(--muted)">Monto Bs.</strong> en ClickUp. Declaraciones sin monto registrado no se incluyen en este resumen.
+    </div>
+  </div>
+
+  <!-- PAY SPLIT -->
+  <div class="sec-label">Diferenciación por tipo de tarea (pago vs. sin pago)</div>
+  <div class="pay-split">
+    <div class="pay-block imp-type">
+      <div class="pay-type-header">
+        
+        <span style="color:var(--muted);font-size:11px">— genera planilla de pago</span>
+      </div>
+      <div class="pay-num" id="p-imp-total" style="color:#7ba8f8">—</div>
+      <div class="pay-desc">declaraciones que ameritan gestión de pago ante Administración</div>
+      <div class="pay-pct"><span id="p-imp-done" style="color:#5ae0c0">—</span> completadas · <span id="p-imp-todo" style="color:#fabb57">—</span> por hacer</div>
+    </div>
+    <div class="pay-block tar-type">
+      <div class="pay-type-header">
+        
+        <span style="color:var(--muted);font-size:11px">— no requiere pago</span>
+      </div>
+      <div class="pay-num" id="p-tar-total" style="color:#5ae0c0">—</div>
+      <div class="pay-desc">declaraciones informativas / sin generación de planilla</div>
+      <div class="pay-pct"><span id="p-tar-done" style="color:#5ae0c0">—</span> completadas · <span id="p-tar-todo" style="color:#fabb57">—</span> por hacer</div>
+    </div>
+  </div>
+
+  <!-- MONTH HEATMAP -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="sec-label" style="margin-bottom:1rem">Por mes — haz clic para filtrar</div>
+    <div class="month-row" id="month-row"></div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="split-row">
+    <div class="card">
+      <div class="sec-label">Por línea de negocio <span style="color:var(--dim);font-size:9px;margin-left:8px">azul = con pago · verde = sin pago</span></div>
+      <div class="hbar-list" id="bars-linea"></div>
+    </div>
+    <div class="card">
+      <div class="sec-label">Por responsable</div>
+      <div class="hbar-list" id="bars-resp"></div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="sec-label" style="margin-top:1.5rem">Detalle de declaraciones</div>
+  <div class="filter-bar">
+    <label>Buscar:</label>
+    <input type="text" id="f-search" placeholder="Nombre, empresa…" oninput="applyFilters()">
+    <label>Mes:</label>
+    <select id="f-mes" onchange="applyFilters()"><option value="">Todos</option></select>
+    <label>Línea:</label>
+    <select id="f-linea" onchange="applyFilters()"><option value="">Todas</option></select>
+    <label>Tipo tarea:</label>
+    <select id="f-tipo" onchange="applyFilters()">
+      <option value="">Todos</option>
+      <option value="Impuesto">IMPUESTO (con pago)</option>
+      <option value="Tarea">TAREA (sin pago)</option>
+    </select>
+    <label>Estado:</label>
+    <select id="f-estado" onchange="applyFilters()">
+      <option value="">Todos</option>
+      <option value="completado">Completado</option>
+      <option value="por hacer">Por hacer</option>
+      <option value="haciendo">Haciendo</option>
+    </select>
+    <label>Responsable:</label>
+    <select id="f-resp" onchange="applyFilters()"><option value="">Todos</option></select>
+    <button class="btn-reset" onclick="resetFilters()">↺ Limpiar</button>
+    <span id="filter-count" style="color:var(--dim);font-size:11px;margin-left:4px"></span>
+  </div>
+  <div class="card">
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('n')">Declaración <span class="si">↕</span></th>
+            <th onclick="sortBy('linea')">Línea de negocio <span class="si">↕</span></th>
+            <th onclick="sortBy('tipoImp')">Tipo impuesto <span class="si">↕</span></th>
+            <th onclick="sortBy('mes')">Mes <span class="si">↕</span></th>
+            <th onclick="sortBy('dd')">Fecha límite <span class="si">↕</span></th>
+            <th onclick="sortBy('resp')">Responsable <span class="si">↕</span></th>
+            <th onclick="sortBy('s')">Estado <span class="si">↕</span></th>
+            <th onclick="sortBy('tt')">Tipo tarea <span class="si">↕</span></th>
+            <th>Fuente</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="pg-btn" id="pg-prev" onclick="changePage(-1)">← Anterior</button>
+      <span class="pg-info" id="pg-info"></span>
+      <button class="pg-btn" id="pg-next" onclick="changePage(1)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="margin-top:4rem;padding-top:1.25rem;border-top:1px solid var(--border);padding-bottom:1rem;display:flex;justify-content:center;align-items:center">
+    <p style="font-family:var(--font-display);font-size:11.5px;color:var(--dim);letter-spacing:.02em;text-align:center">
+      Tablero de cumplimiento fiscal · Andrómeda · 2026
+      <span style="margin:0 10px;color:var(--border2)">·</span>
+      Confidencial — uso interno
+      <span style="margin:0 10px;color:var(--border2)">·</span>
+      Realizado por la Gerencia de Proyectos
+    </p>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  MAPEO OFICIAL DE LÍNEAS DE NEGOCIO (campo ClickUp)
+//  Solo se usan los valores que existen en el campo personalizado
+// ══════════════════════════════════════════════════════════════
+function extractLinea(name) {
+  const n = name.toLowerCase();
+  // Empresas del grupo Bevcraft → BEVCRAFT DISTRIBUIDORA o la variante
+  if(n.includes('bevcraft distribuidora') || n.includes('bevcraft d.') || n.includes('nº 030012241') || n.includes('nº 030012070') || n.includes('almacen la naya') || n.includes('oficina administrativa - nº 030012'))
+    return 'BEVCRAFT DISTRIBUIDORA';
+  if(n.includes('bevcraft de venezuela') || n.includes('bevcraft ven'))
+    return 'BEVCRAFT DISTRIBUIDORA'; // misma empresa en ClickUp
+  if(n.includes('cervecentro') || n.includes('030011835') || n.includes('030012306') || n.includes('deposito la naya') || n.includes('almacén la naya') && n.includes('cerv'))
+    return 'CERVECENTRO';
+  if(n.includes('conectium'))  return 'CONECTIUM';
+  if(n.includes('pangeatech') || n.includes('g. pangeatech')) return 'PANGEATECH';
+  if(n.includes('sinapsis'))   return 'SINAPSIS'; // Sinapsis es parte de Celupago/Pangeatech group
+  if(n.includes('celupago'))   return 'CELUPAGO';
+  if(n.includes('empower'))    return 'EMPOWER HEALTH';
+  // Empresas que no tienen línea de negocio propia → Andromeda (holding)
+  if(n.includes('danarius'))          return 'ANDROMEDA';
+  if(n.includes('transvida'))         return 'ANDROMEDA';
+  if(n.includes('transacciones') || n.includes('trans. móviles')) return 'ANDROMEDA';
+  if(n.includes('tecnofin'))          return 'ANDROMEDA';
+  if(n.includes('tecnoloagricola') || n.includes('tecnologricola')) return 'ANDROMEDA';
+  if(n.includes('tecnologreen') || n.includes('tecnologren'))       return 'ANDROMEDA';
+  if(n.includes('destileria') || n.includes('destilería'))          return 'ANDROMEDA';
+  if(n.includes('inversiones'))       return 'ANDROMEDA';
+  if(n.includes('construtecno'))      return 'ANDROMEDA';
+  return 'ANDROMEDA';
+}
+
+function extractTipoImp(name) {
+  const n = name.toLowerCase();
+  if(n.includes('retenciones iva') || n.includes('retenciones de iva') || n.includes('ret. iva')) return 'Ret. IVA';
+  if(n.includes('retenciones islr') || n.includes('ret. islr')) return 'Ret. ISLR';
+  if(n.includes('anticipo islr') || n.includes('anticipo de islr')) return 'Anticipo ISLR';
+  if(n.includes('anticipo iva') || n.includes('anticipo de iva')) return 'Anticipo IVA';
+  if(n.includes('igtf')) return 'IGTF';
+  if(n.includes('iva a cuenta') || n.includes('iva a cuenta de terceros')) return 'IVA c/Terceros';
+  if(n.includes(' iva') || n.includes('- iva')) return 'IVA';
+  if(n.includes('islr') && !n.includes('anticipo')) return 'ISLR';
+  if(n.includes('ley de pensiones')) return 'Ley de Pensiones';
+  if(n.includes('alcaldia') || n.includes('alcaldía')) return 'Alcaldía Mpal.';
+  if(n.includes('fonacit')) return 'FONACIT';
+  if(n.includes('aporte deporte')) return 'Aporte Deporte';
+  if(n.includes('ingresos brutos')) return 'Ingresos Brutos';
+  return 'Otro';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DATA REAL DE CLICKUP — Mayo y Junio 2026 únicamente
+//  task_type: "Impuesto" = genera pago | null = Tarea
+//  src: "seniat"|"alcaldia"|"fonacit"|"directo"
+// ══════════════════════════════════════════════════════════════
+const RAW = [
+  // ─── MAY 2026 — Declarar Impuestos en el Portal SENIAT (86b9ref7n) — 81 subtareas ───
+  {n:"Pangeatech \u2013 IVA \u2013 Segunda Quincena del mes - 04-2026", dd:1777881600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Pangeatech \u2013 Anticipo de ISLR \u2013 Segunda Quincena del mes - 04-2026", dd:1777881600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Pangeatech \u2013 Retenciones de IVA \u2013 Segunda Quincena del mes - 04-2026", dd:1777881600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Pangeatech \u2013 IGTF \u2013Segunda Quincena del mes - 04-2026", dd:1777881600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Pangeatech \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:1778659200000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Pangeatech \u2013 Ley de Pensiones \u2013 Mes - 04-2026 - VENCIMIENTO 18-05-2026", dd:1779091200000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Pangeatech \u2013 IVA \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Pangeatech \u2013 Anticipo ISLR \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Pangeatech \u2013 Retenciones IVA \u2013 Primera Quincena del mes - 05-2026 - Vencimiento - 18-05-2026", dd:null, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Pangeatech \u2013 IGTF \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago \u2013 IVA \u2013 Segunda Quincena del mes - 04-2026", dd:1778745600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago \u2013 Anticipo de ISLR\u2013 Segunda Quincena del mes - 04-2026", dd:1778745600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago \u2013 Retenciones de IVA \u2013 Segunda Quincena del mes - 04-2026", dd:1778745600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago \u2013 IGTF \u2013Segunda Quincena del mes - 04-2026", dd:1778745600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago \u2013 Retenciones ISLR \u2013 Mes -04-2026", dd:1778140800000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago - Iva a Cta de Terceros - Segunda Quincena del mes - 04- 2026", dd:1778140800000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago \u2013 Ley de Pensiones \u2013 Mes - 04-2026", dd:1780041600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago \u2013 IVA \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago \u2013 Anticipo ISLR \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago \u2013 Retenciones IVA \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Celupago \u2013 IGTF \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 IVA \u2013 Segunda Quincena del mes - 04-2026", dd:1778745600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 Anticipo de ISLR \u2013 Segunda Quincena del mes - 04-2026", dd:1778745600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis - IVA a Cta de Terceros - Segunda Quincena - 04-2026", dd:1778659200000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 Retenciones de IVA \u2013 Segunda Quincena del mes - 04-2026", dd:1778745600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 IGTF \u2013Segunda Quincena del mes - 04-2026", dd:1778745600000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:1778140800000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 Ley de Pensiones \u2013 Mes - 04-2026", dd:1780041600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 IVA \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 Anticipo ISLR \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 Retenciones IVA \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 IGTF \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Conectium \u2013 IVA \u2013 Segunda Quincena del mes - 04-2026", dd:1778659200000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Conectium \u2013 Anticipo de ISLR \u2013 Segunda Quincena del mes - 04-2026", dd:1778659200000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Conectium \u2013 Retenciones de IVA \u2013 Segunda Quincena del mes - 04-2026", dd:1778659200000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Conectium \u2013 IGTF \u2013Segunda Quincena del mes - 04-2026", dd:1778659200000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Conectium \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:1778659200000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Conectium \u2013 Ley de Pensiones \u2013 Mes - 04-2026 - Vencimiento: 21/05/2026", dd:1779350400000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Conectium \u2013 IVA \u2013 Primera Quincena del mes - 05-2026 - Vencimiento: 21/05/2026", dd:1779350400000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Conectium \u2013 Anticipo ISLR \u2013 Primera Quincena del mes - 05-2026 - Vencimiento: 21/05/2026", dd:1779350400000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Conectium \u2013 Retenciones IVA \u2013 Primera Quincena del mes - 05-2026 - Vencimiento: 21/05/2026", dd:1779350400000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Conectium \u2013 IGTF \u2013 Primera Quincena del mes - 05-2026 - Vencimiento: 21/05/2026", dd:1779350400000, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 IVA \u2013 Segunda Quincena del mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 Anticipo de ISLR \u2013 Segunda Quincena del mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 Retenciones de IVA \u2013 Segunda Quincena del mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 IGTF \u2013Segunda Quincena del mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 Ley de Pensiones \u2013 Mes - 04-2026 VENCIMIENTO: 19/05/2026", dd:null, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 IVA \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 Anticipo ISLR \u2013 Primera Quincena del mes - 05-2026 VENCIMIENTO: 19/05/2026", dd:null, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 Retenciones IVA \u2013 Primera Quincena del mes - 05-2026 VENCIMIENTO: 19/05/2026", dd:null, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 IGTF \u2013 Primera Quincena del mes - 05-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Bevcraft Distribuidora \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Bevcraft Distribuidora - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Bevcraft Distribuidora \u2013 Ley de Pensiones \u2013 Mes - 04-2026 VENCIMIENTO: 19/05/2026", dd:null, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Bevcraft de Venezuela \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Bevcraft de Venezuela - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Empower Health \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Empower Health - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Empower \u2013 Ley de Pensiones \u2013 Mes - 04-2026 VENCIMIENTO: 25/05/2026", dd:null, s:"completado", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Empower - Ley de Pensiones - mes 05-2026 - Vencimiento: 25/05/2026", dd:1779696000000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"MAY 2026"},
+  {n:"Destileria La Providencia \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Destileria La Providencia - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Grupo Tecnologreen \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Grupo Tecnologreen - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Inversiones Construtecno \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Inversiones Construtecno - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Inversiones Day Camp La Naciente \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Inversiones Day Camp La Naciente - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Inversiones Soluciones M\u00f3viles Profesionales 0105 \u2013 Retenciones ISLR \u2013 Mes- 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Inversiones Soluciones M\u00f3viles Profesionales 0105 - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Tecnoloagricola Industrial \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Tecnoloagricola Industrial - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Soluciones Tecnofin 3000 \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Soluciones Tecnofin 3000 - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Transacciones Moviles \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Transacciones Moviles - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Danarius Consultores \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Danarius Consultores - IVA \u2013 Mes -04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Corporaci\u00f3n de Servicios Transvida \u2013 Retenciones ISLR \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  {n:"Corporaci\u00f3n de Servicios Transvida - IVA \u2013 Mes - 04-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"MAY 2026"},
+  // ─── MAY 2026 — Declarar Ingresos Brutos en portales de Alcaldía (86b9refrj) — 9 subtareas ───
+  {n:"G. Pangeatech \u2013 Alcaldia Baruta -03-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"alcaldia", mes:"MAY 2026"},
+  {n:"Celupago \u2013 Alcaldia Baruta - 03-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"alcaldia", mes:"MAY 2026"},
+  {n:"Sinapsis \u2013 Alcaldia Baruta - 03-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"alcaldia", mes:"MAY 2026"},
+  {n:"Conectium \u2013 Alcaldia Baruta - 03-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"alcaldia", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 Alcaldia Jos\u00e9 Felix Ribas - 03-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"alcaldia", mes:"MAY 2026"},
+  {n:"Cervecentro \u2013 Alcaldia Baruta - 03-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"alcaldia", mes:"MAY 2026"},
+  {n:"Empower \u2013 Alcaldia Baruta - 03-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"alcaldia", mes:"MAY 2026"},
+  {n:"Bevcraft Distribuidora - Alcaldia Baruta - 03-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"alcaldia", mes:"MAY 2026"},
+  {n:"Conectium - Alcaldia Baruta - Ret. Impuesto Muncipal - 03-2026", dd:null, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"alcaldia", mes:"MAY 2026"},
+
+  // ─── JUN 2026 — Declarar Impuestos en el Portal SENIAT (86ba0t261) — 80 subtareas ───
+  {n:"Pangeatech \u2013 IVA \u2013 Segunda Quincena del mes - 05-2026 - VENCIMIENTO: 11/06/2026", dd:1781164800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Pangeatech \u2013 Anticipo de ISLR \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 11/06/2026", dd:1781164800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Pangeatech \u2013 Retenciones de IVA \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 11/06/2026", dd:1781164800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Pangeatech \u2013 IGTF \u2013Segunda Quincena del mes - 05-2026 - Vencimiento: 11/06/2026", dd:1781164800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Pangeatech \u2013 Retenciones ISLR \u2013 Mes - 05-2026 - Vencimiento: 11/06/2026", dd:1781164800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Pangeatech \u2013 Ley de Pensiones \u2013 Mes - 05-2026 - Vencimiento: 26/06/2026", dd:1782460800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Pangeatech \u2013 IVA \u2013 Primera Quincena del mes - 06-2026", dd:1782460800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Pangeatech \u2013 Anticipo ISLR \u2013 Primera Quincena del mes - 06-2026", dd:1782460800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Pangeatech \u2013 Retenciones IVA \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 26/06/2026", dd:1782460800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Pangeatech \u2013 IGTF \u2013 Primera Quincena del mes - 06-2026", dd:1782460800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago \u2013 IVA \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 03/06/2026", dd:1780473600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago - IVA a Cuenta de Terceros - Segunda Quincena - 05-2026 - Vencimiento: 03/06/2026", dd:1780473600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago \u2013 Anticipo de ISLR\u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 03/06/2026", dd:1780473600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago \u2013 Retenciones de IVA \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 03/06/2026", dd:1780473600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago \u2013 IGTF \u2013Segunda Quincena del mes - 05-2026 - Vencimiento: 03/06/2026", dd:1780473600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago \u2013 Retenciones ISLR \u2013 Mes -05-2026 - Vencimiento: 10/06/2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago \u2013 Ley de Pensiones \u2013 Mes - 05-2026 - Vencimiento: 16/06/2026", dd:1781596800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago \u2013 IVA \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 16/06/2026", dd:1781596800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago \u2013 Anticipo ISLR \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 16/06/2026", dd:1781596800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago \u2013 Retenciones IVA \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 16/06/2026", dd:1781596800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Celupago \u2013 IGTF \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 16/06/2026", dd:1781596800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Sinapsis \u2013 IVA \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 03/06/2026", dd:1780473600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Sinapsis \u2013 Anticipo de ISLR \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 03/06/2026", dd:1780473600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Sinapsis \u2013 Retenciones de IVA \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 03/06/2026", dd:1780473600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Sinapsis \u2013 IGTF \u2013Segunda Quincena del mes - 05-2026 - Vencimiento: 03/06/2026", dd:1780473600000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Sinapsis \u2013 Retenciones ISLR \u2013 Mes - 05-2026 - Vencimiento: 10/06/2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Sinapsis \u2013 Ley de Pensiones \u2013 Mes - 05-2026 - Vencimiento: 16/06/2026", dd:1781596800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Sinapsis \u2013 IVA \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 16/06/2026", dd:1781596800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Sinapsis \u2013 Anticipo ISLR \u2013 Primera Quincena del mes - 06-2026 Vencimiento: 16/06/2026", dd:1781596800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Sinapsis \u2013 Retenciones IVA \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 16/06/2026", dd:1781596800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Sinapsis \u2013 IGTF \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 16/06/2026", dd:1781596800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium \u2013 IVA \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 02/06/2026", dd:1780387200000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium \u2013 Anticipo de ISLR \u2013 Segunda Quincena del mes - 05-2026 -  Vencimiento: 02/06/2026", dd:1780387200000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium - IVA a Cuenta de Terceros - Segunda Quincena del mes - 05-2026 - Vencimiento: 02/06/2026", dd:1780387200000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium \u2013 Retenciones de IVA \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 02/06/2026", dd:1780387200000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium \u2013 IGTF \u2013Segunda Quincena del mes - 05-2026 - Vencimiento: 02/06/2026", dd:1780387200000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium \u2013 Retenciones ISLR \u2013 Mes - 05-2026 - Vencimiento: 11/06/2026", dd:1781164800000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium \u2013 Ley de Pensiones \u2013 Mes - 05-2026 - Vencimiento: 19/06/2026", dd:1781856000000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium \u2013 IVA \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 19/06/2026", dd:1781856000000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium \u2013 Anticipo ISLR \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 19/06/2026", dd:1781856000000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium \u2013 Retenciones IVA \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 19/06/2026", dd:1781856000000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Conectium \u2013 IGTF \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 02/06/2026", dd:1781856000000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Cervecentro \u2013 IVA \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 15/06/2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Cervecentro \u2013 Anticipo de ISLR \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 15/06/2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Cervecentro \u2013 Retenciones de IVA \u2013 Segunda Quincena del mes - 05-2026 - Vencimiento: 15/06/2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Cervecentro \u2013 IGTF \u2013Segunda Quincena del mes - 05-2026 -Vencimiento: 15/06/2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Cervecentro \u2013 Retenciones ISLR \u2013 Mes - 05-2026 - Vencimiento: 04/06/2026", dd:1780560000000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Cervecentro \u2013 Ley de Pensiones \u2013 Mes - 05-2026 Vencimiento: 30/06/2026", dd:1782806400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Cervecentro \u2013 IVA \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 30/06/2026", dd:1782806400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Cervecentro \u2013 Anticipo ISLR \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 30/06/2026", dd:1782806400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Cervecentro \u2013 Retenciones IVA \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 30/06/2026", dd:1782806400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Cervecentro \u2013 IGTF \u2013 Primera Quincena del mes - 06-2026 - Vencimiento: 30/06/2026", dd:1782806400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Bevcraft Distribuidora \u2013 Retenciones ISLR \u2013 Mes - 05-2026 - Vencimiento: 10/06/2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Bevcraft Distribuidora - IVA \u2013 Mes - 05-2026 - Vencimiento: 10/06/2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Bevcraft Distribuidora - Ley de Pensiones - Mes - 05-2026 - Vencimiento: 30/06/2026", dd:1782806400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Bevcraft de Venezuela \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Bevcraft de Venezuela - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Empower Health \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Empower Health - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Empower - Ley de Pensiones - Mes - 05-2026 - Vencimiento: 25/06/2026", dd:1782374400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"seniat", mes:"JUN 2026"},
+  {n:"Destileria La Providencia \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Destileria La Providencia - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Grupo Tecnologreen \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Grupo Tecnologreen - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Inversiones Construtecno \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Inversiones Construtecno - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Inversiones Day Camp La Naciente \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Inversiones Day Camp La Naciente - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Inversiones Soluciones M\u00f3viles Profesionales 0105 \u2013 Retenciones ISLR \u2013 Mes- 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Inversiones Soluciones M\u00f3viles Profesionales 0105 - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Tecnoloagricola Industrial \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Tecnoloagricola Industrial - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Soluciones Tecnofin 3000 \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Soluciones Tecnofin 3000 - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Transacciones Moviles \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Transacciones Moviles - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Danarius Consultores \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Danarius Consultores - IVA \u2013 Mes -05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Corporaci\u00f3n de Servicios Transvida \u2013 Retenciones ISLR \u2013 Mes - 05-2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  {n:"Corporaci\u00f3n de Servicios Transvida - IVA \u2013 Mes - 05-2026", dd:1781510400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:null, src:"seniat", mes:"JUN 2026"},
+  // ─── JUN 2026 — Declarar Ingresos Brutos en portales de Alcaldía (86ba0t2av) — 4 subtareas ───
+  {n:"Alcaldia - Ofic Administrativa - N\u00ba 030011835 - Cervecentro - 05-2026 - Vencimiento: 10/06/2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"alcaldia", mes:"JUN 2026"},
+  {n:"Alcaldia - Deposito La Naya - N\u00ba 030012306 - Cervecentro - 05- 2026 - Vencimiento: 10/06/2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"alcaldia", mes:"JUN 2026"},
+  {n:"Alcaldia - Oficina Administrativa - N\u00ba 030012241 - Bevcraft D. - 05-2026 - Vencimiento: 10/06/2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"alcaldia", mes:"JUN 2026"},
+  {n:"Alcaldia - Almacen La Naya - N\u00ba 030012070 - Bevcraft D.  - 05-2026 - Vencimiento: 10/06/2026", dd:1781078400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"alcaldia", mes:"JUN 2026"},
+  // ─── JUN 2026 — Declaración de Fonacit - Empresas (86ba0t23w) — 3 subtareas ───
+  {n:"Sinapsis - Aporte a FONACIT -  05-2026 - Vencimiento: 05/06/2026", dd:1780646400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"fonacit", mes:"JUN 2026"},
+  {n:"Conectium - Aporte a FONACIT -  05-2026 - Vencimiento: 05/06/2026", dd:1780646400000, s:"por hacer", a:["Maria Barrios", "Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"fonacit", mes:"JUN 2026"},
+  {n:"Pangeatech - Aporte a FONACIT - 05-2026 - Vencimiento: 11/06/2026", dd:1781164800000, s:"por hacer", a:["Silvia Andreina Mendoza Mejia"], tt:"Impuesto", src:"fonacit", mes:"JUN 2026"},
+];
+
+// ── Enriquecer datos ──
+const TODAY = new Date();
+RAW.forEach(t => {
+  t.linea   = extractLinea(t.n);
+  t.tipoImp = extractTipoImp(t.n);
+  t.resp    = t.a.length ? t.a[0] : 'Sin asignar';
+});
+const ALL = RAW;
+
+// Conteo real de declaraciones por línea de negocio (fuente: RAW — 3 tareas principales)
+const RAW_COUNT_LINEA = {};
+RAW.forEach(t => { RAW_COUNT_LINEA[t.linea] = (RAW_COUNT_LINEA[t.linea]||0) + 1; });
+
+
+// ── Estado ──
+let filtered = [...ALL];
+let sortField = 'dd', sortAsc = true;
+let page = 1; const PG = 25;
+let activeMes = null;
+
+// ══════════════════════════════════════════════════════════════
+// MONTOS — campos Monto (USD) id:3e3febb8 y Monto Bs. id:ac638879
+// ══════════════════════════════════════════════════════════════
+// MONTOS VERIFICADOS del archivo data_declaraciones.xlsx exportado desde ClickUp
+// Fuente: campos Monto (USD) y Monto Bs. — subtareas de las 3 tareas principales
+// MAY 2026: 17 declaraciones con monto registrado | JUN 2026: pendiente de registro
+const MONTOS_DATA = [
+  // ── MAY 2026 — datos reales del xlsx ─────────────────────────────────────────
+  {n:'Pangeatech – IVA – Segunda Quincena del mes - 04-2026', linea:"PANGEATECH", tipoImp:"IVA", mes:"MAY 2026", dd:1777881600000, usd:3000.61, bs:1469451.39, s:"completado"},
+  {n:'Pangeatech – Anticipo de ISLR – Segunda Quincena del mes - 04-2026', linea:"PANGEATECH", tipoImp:"Anticipo ISLR", mes:"MAY 2026", dd:1777881600000, usd:790.11, bs:386803.16, s:"completado"},
+  {n:'Pangeatech – Retenciones de IVA – Segunda Quincena del mes - 04-2026', linea:"PANGEATECH", tipoImp:"Ret. IVA", mes:"MAY 2026", dd:1777881600000, usd:106.79, bs:52280.33, s:"completado"},
+  {n:'Pangeatech – Retenciones ISLR – Mes - 04-2026', linea:"PANGEATECH", tipoImp:"Ret. ISLR", mes:"MAY 2026", dd:1778659200000, usd:300.5, bs:148259.79, s:"completado"},
+  {n:'Pangeatech – Ley de Pensiones – Mes - 04-2026 - VENCIMIENTO 18-05-2026', linea:"PANGEATECH", tipoImp:"Ley de Pensiones", mes:"MAY 2026", dd:1779091200000, usd:395.06, bs:193401.58, s:"completado"},
+  {n:'Celupago – IVA – Segunda Quincena del mes - 04-2026', linea:"CELUPAGO", tipoImp:"IVA", mes:"MAY 2026", dd:1777968000000, usd:405.0, bs:199819.05, s:"completado"},
+  {n:'Celupago – Anticipo de ISLR– Segunda Quincena del mes - 04-2026', linea:"CELUPAGO", tipoImp:"Anticipo ISLR", mes:"MAY 2026", dd:1777968000000, usd:145.05, bs:71565.65, s:"completado"},
+  {n:'Celupago – Retenciones de IVA – Segunda Quincena del mes - 04-2026', linea:"CELUPAGO", tipoImp:"Ret. IVA", mes:"MAY 2026", dd:1777968000000, usd:207.47, bs:102362.95, s:"completado"},
+  {n:'Celupago – Retenciones ISLR – Mes -04-2026', linea:"CELUPAGO", tipoImp:"Ret. ISLR", mes:"MAY 2026", dd:1778140800000, usd:113.07, bs:55784.38, s:"completado"},
+  {n:'Celupago - Iva a Cta de Terceros - Segunda Quincena del mes - 04-2026', linea:"CELUPAGO", tipoImp:"IVA c/Terceros", mes:"MAY 2026", dd:1778140800000, usd:31.77, bs:15675.73, s:"completado"},
+  {n:'Sinapsis – Anticipo de ISLR – Segunda Quincena del mes - 04-2026', linea:"SINAPSIS", tipoImp:"Anticipo ISLR", mes:"MAY 2026", dd:1777968000000, usd:989.34, bs:503178.44, s:"completado"},
+  {n:'Sinapsis – Retenciones de IVA – Segunda Quincena del mes - 04-2026', linea:"SINAPSIS", tipoImp:"Ret. IVA", mes:"MAY 2026", dd:1777968000000, usd:1004.7, bs:510991.93, s:"completado"},
+  {n:'Sinapsis – Retenciones ISLR – Mes - 04-2026', linea:"SINAPSIS", tipoImp:"Ret. ISLR", mes:"MAY 2026", dd:1778140800000, usd:1037.09, bs:515256.73, s:"completado"},
+  {n:'Sinapsis - IVA a Cta de Terceros - Segunda Quincena - 04-2026', linea:"SINAPSIS", tipoImp:"IVA c/Terceros", mes:"MAY 2026", dd:1778659200000, usd:1468.47, bs:746862.5, s:"completado"},
+  {n:'Conectium – IVA – Segunda Quincena del mes - 04-2026', linea:"CONECTIUM", tipoImp:"IVA", mes:"MAY 2026", dd:1778659200000, usd:347792.1, bs:175605309.56, s:"completado"},
+  {n:'Conectium – Anticipo de ISLR – Segunda Quincena del mes - 04-2026', linea:"CONECTIUM", tipoImp:"Anticipo ISLR", mes:"MAY 2026", dd:1778659200000, usd:20958.33, bs:10582167.39, s:"completado"},
+  {n:'Conectium – Retenciones de IVA – Segunda Quincena del mes - 04-2026', linea:"CONECTIUM", tipoImp:"Ret. IVA", mes:"MAY 2026", dd:1778659200000, usd:136538.49, bs:68940278.94, s:"completado"},
+  // ── JUN 2026 — montos pendientes de registro en ClickUp ─────────────────────
+  {n:'Conectium - IVA a Cuenta de Terceros - Segunda Quincena del mes - 05-2026', linea:"CONECTIUM", tipoImp:"IVA c/Terceros", mes:"JUN 2026", dd:1780387200000, usd:null, bs:null, s:"por hacer"},
+  {n:'Celupago - IVA a Cuenta de Terceros - Segunda Quincena - 05-2026', linea:"CELUPAGO", tipoImp:"IVA c/Terceros", mes:"JUN 2026", dd:1780473600000, usd:null, bs:null, s:"por hacer"},
+  {n:'Empower - Ley de Pensiones - Mes - 05-2026', linea:"EMPOWER HEALTH", tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1782374400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Bevcraft Distribuidora - Ley de Pensiones - Mes - 05-2026', linea:"BEVCRAFT DISTRIBUIDORA", tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1782806400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Cervecentro – Ley de Pensiones – Mes - 05-2026', linea:"CERVECENTRO", tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1782806400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Celupago – Ley de Pensiones – Mes - 05-2026', linea:"CELUPAGO", tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1781596800000, usd:null, bs:null, s:"por hacer"},
+  {n:'Sinapsis – Ley de Pensiones – Mes - 05-2026', linea:"SINAPSIS", tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1781596800000, usd:null, bs:null, s:"por hacer"},
+  {n:'Conectium – Ley de Pensiones – Mes - 05-2026', linea:"CONECTIUM", tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1781856000000, usd:null, bs:null, s:"por hacer"},
+  {n:'Pangeatech – Ley de Pensiones – Mes - 05-2026', linea:"PANGEATECH", tipoImp:"Ley de Pensiones", mes:"JUN 2026", dd:1782460800000, usd:null, bs:null, s:"por hacer"},
+  {n:'Cervecentro – Retenciones ISLR – Mes - 05-2026', linea:"CERVECENTRO", tipoImp:"Ret. ISLR", mes:"JUN 2026", dd:1780560000000, usd:null, bs:null, s:"por hacer"},
+  {n:'Conectium – Retenciones ISLR – Mes - 05-2026', linea:"CONECTIUM", tipoImp:"Ret. ISLR", mes:"JUN 2026", dd:1781164800000, usd:null, bs:null, s:"por hacer"},
+  {n:'Pangeatech – Retenciones ISLR – Mes - 05-2026', linea:"PANGEATECH", tipoImp:"Ret. ISLR", mes:"JUN 2026", dd:1781164800000, usd:null, bs:null, s:"por hacer"},
+  {n:'Celupago – Retenciones ISLR – Mes - 05-2026', linea:"CELUPAGO", tipoImp:"Ret. ISLR", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Sinapsis – Retenciones ISLR – Mes - 05-2026', linea:"SINAPSIS", tipoImp:"Ret. ISLR", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Bevcraft Distribuidora – Retenciones ISLR – Mes - 05-2026', linea:"BEVCRAFT DISTRIBUIDORA", tipoImp:"Ret. ISLR", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Empower Health – Retenciones ISLR – Mes - 05-2026', linea:"EMPOWER HEALTH", tipoImp:"Ret. ISLR", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Cervecentro – Retenciones IVA – Primera Quincena del mes - 06-2026', linea:"CERVECENTRO", tipoImp:"Ret. IVA", mes:"JUN 2026", dd:1782806400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Conectium – Retenciones IVA – Primera Quincena del mes - 06-2026', linea:"CONECTIUM", tipoImp:"Ret. IVA", mes:"JUN 2026", dd:1781856000000, usd:null, bs:null, s:"por hacer"},
+  {n:'Pangeatech – Retenciones IVA – Primera Quincena del mes - 06-2026', linea:"PANGEATECH", tipoImp:"Ret. IVA", mes:"JUN 2026", dd:1782460800000, usd:null, bs:null, s:"por hacer"},
+  {n:'Celupago – Retenciones IVA – Primera Quincena del mes - 06-2026', linea:"CELUPAGO", tipoImp:"Ret. IVA", mes:"JUN 2026", dd:1781596800000, usd:null, bs:null, s:"por hacer"},
+  {n:'Sinapsis – Retenciones IVA – Primera Quincena del mes - 06-2026', linea:"SINAPSIS", tipoImp:"Ret. IVA", mes:"JUN 2026", dd:1781596800000, usd:null, bs:null, s:"por hacer"},
+  {n:'Cervecentro – Anticipo ISLR – Primera Quincena del mes - 06-2026', linea:"CERVECENTRO", tipoImp:"Anticipo ISLR", mes:"JUN 2026", dd:1782806400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Conectium – Anticipo ISLR – Primera Quincena del mes - 06-2026', linea:"CONECTIUM", tipoImp:"Anticipo ISLR", mes:"JUN 2026", dd:1781856000000, usd:null, bs:null, s:"por hacer"},
+  {n:'Sinapsis – Anticipo ISLR – Primera Quincena del mes - 06-2026', linea:"SINAPSIS", tipoImp:"Anticipo ISLR", mes:"JUN 2026", dd:1781596800000, usd:null, bs:null, s:"por hacer"},
+  {n:'Celupago – Anticipo ISLR – Primera Quincena del mes - 06-2026', linea:"CELUPAGO", tipoImp:"Anticipo ISLR", mes:"JUN 2026", dd:1781596800000, usd:null, bs:null, s:"por hacer"},
+  {n:'G. Pangeatech – Alcaldia Baruta - 04-2026', linea:"PANGEATECH", tipoImp:"Alcaldía", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Celupago – Alcaldia Baruta - 04-2026', linea:"CELUPAGO", tipoImp:"Alcaldía", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Sinapsis – Alcaldia Baruta - 04-2026', linea:"SINAPSIS", tipoImp:"Alcaldía", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Conectium – Alcaldia Baruta - 04-2026', linea:"CONECTIUM", tipoImp:"Alcaldía", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Cervecentro – Alcaldia Baruta Ofic. Adm. - 04-2026', linea:"CERVECENTRO", tipoImp:"Alcaldía", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Cervecentro – Alcaldia Baruta Depósito La Naya - 04-2026', linea:"CERVECENTRO", tipoImp:"Alcaldía", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Empower – Alcaldia Baruta - 04-2026', linea:"EMPOWER HEALTH", tipoImp:"Alcaldía", mes:"JUN 2026", dd:1781078400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Conectium – Alcaldia Ret. Impuesto Municipal - 04-2026', linea:"CONECTIUM", tipoImp:"Alcaldía", mes:"JUN 2026", dd:1780646400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Sinapsis - Aporte a FONACIT - 05-2026', linea:"SINAPSIS", tipoImp:"FONACIT", mes:"JUN 2026", dd:1780646400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Conectium - Aporte a FONACIT - 05-2026', linea:"CONECTIUM", tipoImp:"FONACIT", mes:"JUN 2026", dd:1780646400000, usd:null, bs:null, s:"por hacer"},
+  {n:'Pangeatech - Aporte a FONACIT - 05-2026', linea:"PANGEATECH", tipoImp:"FONACIT", mes:"JUN 2026", dd:1781164800000, usd:null, bs:null, s:"por hacer"},
+];
+
+const TIPO_COLORS = {
+  'Ret. IVA':'#4f7ef5','Anticipo ISLR':'#9b7bf4','Ret. ISLR':'#2ec4a4',
+  'IVA c/Terceros':'#f5a623','Ley de Pensiones':'#e8526a','Alcaldía':'#34d1bf',
+  'FONACIT':'#82b0f5','IVA':'#c084fc','IGTF':'#fbbf24'
+};
+
+let montosSortField = 'usd', montosSortAsc = false;
+let activeTab = 'linea';
+
+function switchTab(tab) {
+  activeTab = tab;
+  ['linea','tipo','detalle'].forEach(t => {
+    document.getElementById('view-'+t).style.display = t===tab?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  renderMontos();
+}
+
+function getMontosFiltered() {
+  const tipo = document.getElementById('m-filter-tipo')?.value||'';
+  const mes  = document.getElementById('m-filter-mes')?.value||'';
+  return MONTOS_DATA.filter(d => {
+    if(tipo && d.tipoImp !== tipo) return false;
+    if(mes  && d.mes    !== mes)   return false;
+    return true;
+  });
+}
+
+function fmtUSD(v) {
+  if(!v) return '<span class="amt-zero">—</span>';
+  return `<span class="amt-usd">$ ${v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>`;
+}
+function fmtBS(v) {
+  if(!v) return '<span class="amt-zero">—</span>';
+  return `<span class="amt-bs">Bs. ${v.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>`;
+}
+function fmtDate(ts) {
+  if(!ts) return '—';
+  return new Date(ts).toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+function statusPill(d) {
+  const now = new Date().getTime();
+  if(d.s==='completado') return `<span class="pill" style="background:rgba(56,217,169,.12);color:#5ae0c0;border:1px solid rgba(56,217,169,.25)"><span class="pill-dot" style="background:#38d9a9"></span>Completado</span>`;
+  if(d.dd && d.dd<now)   return `<span class="pill" style="background:rgba(240,92,110,.12);color:#f47885;border:1px solid rgba(240,92,110,.25)"><span class="pill-dot" style="background:#f05c6e"></span>Vencida</span>`;
+  return `<span class="pill" style="background:rgba(248,168,50,.12);color:#fabb57;border:1px solid rgba(248,168,50,.25)"><span class="pill-dot" style="background:#f8a832"></span>Por hacer</span>`;
+}
+
+function groupRows(data, keyFn, labelFn, colorFn) {
+  const groups = {};
+  data.forEach(d => {
+    const k = keyFn(d);
+    if(!groups[k]) groups[k] = {label:labelFn(d,k), color:colorFn(k), items:[], totUSD:0, totBS:0};
+    groups[k].items.push(d);
+    groups[k].totUSD += d.usd||0;
+    groups[k].totBS  += d.bs||0;
+  });
+  return Object.entries(groups).sort((a,b)=>b[1].totUSD-a[1].totUSD).map(([k,v])=>({key:k,...v}));
+}
+
+function renderGroupedView(containerId, groups, col1Label) {
+  const el = document.getElementById(containerId);
+  if(!groups.length) { el.innerHTML = '<div class="empty">Sin datos para los filtros seleccionados.</div>'; return; }
+
+  el.innerHTML = groups.map((grp,gi) => {
+    const rows = grp.items.sort((a,b)=>(b.usd||0)-(a.usd||0)).map(d => {
+      const nom = d.n.length>50 ? d.n.slice(0,50)+'…' : d.n;
+      const col2 = col1Label==='Línea' ? `<td style="color:${TIPO_COLORS[d.tipoImp]||'#7a8099'};font-size:12px;font-weight:600">${d.tipoImp}</td>` : `<td style="color:${LCOLORS[d.linea]||'#7a8099'};font-size:12px">${d.linea}</td>`;
+      return `<tr>
+        <td class="td-name"><span class="td-name-text" title="${d.n}">${nom}</span></td>
+        ${col2}
+        <td style="color:var(--muted);font-size:12px">${d.mes}</td>
+        <td style="font-size:12px;white-space:nowrap;color:var(--muted)">${fmtDate(d.dd)}</td>
+        <td style="text-align:right">${fmtUSD(d.usd)}</td>
+        <td style="text-align:right">${fmtBS(d.bs)}</td>
+        <td>${statusPill(d)}</td>
+      </tr>`;
+    }).join('');
+
+    const col2Header = col1Label==='Línea' ? 'Tipo impuesto' : 'Línea';
+    return `
+    <div class="grp-header" onclick="toggleGrp('grp-${gi}')">
+      <div class="grp-name">
+        <span class="grp-dot" style="background:${grp.color}"></span>
+        ${grp.label}
+        <span class="grp-badge">${(col1Label==='Línea' ? (RAW_COUNT_LINEA[grp.key]||grp.items.length) : grp.items.length)} declaracion${(col1Label==='Línea' ? (RAW_COUNT_LINEA[grp.key]||grp.items.length) : grp.items.length)!==1?'es':''}</span>
+      </div>
+      <div class="grp-amounts">
+        <span class="grp-usd">$ ${grp.totUSD.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+        <span class="grp-bs">Bs. ${grp.totBS.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+        <span class="grp-chevron" id="chev-${gi}">▶</span>
+      </div>
+    </div>
+    <div class="grp-body" id="grp-${gi}" style="max-height:0">
+      <table>
+        <thead><tr>
+          <th>Declaración</th><th>${col2Header}</th><th>Mes</th>
+          <th>Fecha límite</th><th style="text-align:right">Monto USD</th>
+          <th style="text-align:right">Monto Bs.</th><th>Estado</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+        <tr class="grp-subtotal">
+          <td colspan="4" style="color:var(--muted)">Subtotal ${grp.label}</td>
+          <td style="text-align:right;color:#4f7ef5">$ ${grp.totUSD.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+          <td style="text-align:right;color:#9b7bf4">Bs. ${grp.totBS.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+          <td></td>
+        </tr>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+function toggleGrp(id) {
+  const body = document.getElementById(id);
+  const gi = id.split('-')[1];
+  const chev = document.getElementById('chev-'+gi);
+  const isOpen = body.style.maxHeight !== '0px' && body.style.maxHeight !== '0';
+  body.style.maxHeight = isOpen ? '0' : body.scrollHeight + 'px';
+  if(chev) chev.classList.toggle('open', !isOpen);
+}
+
+function sortMontos(field) {
+  if(montosSortField===field) montosSortAsc=!montosSortAsc;
+  else { montosSortField=field; montosSortAsc=false; }
+  renderMontos();
+}
+
+function initMontosFilters() { /* filtros dinámicos manejados por HTML estático */ }
+
+function renderMontos() {
+  const data = getMontosFiltered();
+  const totalUSD = data.reduce((s,d)=>s+(d.usd||0),0);
+  const totalBS  = data.reduce((s,d)=>s+(d.bs||0),0);
+
+  document.getElementById('m-total-usd').textContent = '$ '+totalUSD.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('m-total-bs').textContent  = 'Bs. '+totalBS.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('m-count').textContent = data.filter(d=>d.usd>0).length;
+
+  if(activeTab === 'linea') {
+    const groups = groupRows(data,
+      d => d.linea,
+      (d,k) => k,
+      k => LCOLORS[k]||'#7a8099'
+    );
+    renderGroupedView('m-grupo-linea', groups, 'Línea');
+  }
+
+  if(activeTab === 'tipo') {
+    const groups = groupRows(data,
+      d => d.tipoImp,
+      (d,k) => k,
+      k => TIPO_COLORS[k]||'#7a8099'
+    );
+    renderGroupedView('m-grupo-tipo', groups, 'Tipo');
+  }
+
+  if(activeTab === 'detalle') {
+    const sorted = [...data].sort((a,b) => {
+      const va=a[montosSortField]||0, vb=b[montosSortField]||0;
+      return montosSortAsc ? va-vb : vb-va;
+    });
+    const now = new Date().getTime();
+    document.getElementById('m-tabla-body').innerHTML = sorted.map(d => {
+      const nom = d.n.length>50?d.n.slice(0,50)+'…':d.n;
+      return `<tr>
+        <td class="td-name"><span class="td-name-text" title="${d.n}">${nom}</span></td>
+        <td style="color:${LCOLORS[d.linea]||'#7a8099'};font-size:12px">${d.linea}</td>
+        <td><span style="font-size:12px;color:${TIPO_COLORS[d.tipoImp]||'#7a8099'};font-weight:600">${d.tipoImp}</span></td>
+        <td style="color:var(--muted);font-size:12px">${d.mes}</td>
+        <td style="font-size:12px;white-space:nowrap;color:var(--muted)">${fmtDate(d.dd)}</td>
+        <td style="text-align:right">${fmtUSD(d.usd)}</td>
+        <td style="text-align:right">${fmtBS(d.bs)}</td>
+        <td>${statusPill(d)}</td>
+      </tr>`;
+    }).join('');
+    const totU = sorted.reduce((s,d)=>s+(d.usd||0),0);
+    const totB = sorted.reduce((s,d)=>s+(d.bs||0),0);
+    document.getElementById('m-tabla-foot').innerHTML = `
+      <tr>
+        <td colspan="5" style="font-family:var(--font-display);font-weight:700;font-size:12.5px">TOTAL (${sorted.length} declaraciones)</td>
+        <td style="text-align:right;font-weight:800;font-size:13px;color:#4f7ef5">$ ${totU.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td style="text-align:right;font-weight:800;font-size:13px;color:#9b7bf4">Bs. ${totB.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td></td>
+      </tr>`;
+  }
+}
+
+
+function init() {
+  const _now = new Date();
+  const _opts = {day:'2-digit', month:'short', year:'numeric'};
+  const _dateStr = _now.toLocaleDateString('es-VE', _opts);
+  const _el = document.getElementById('now-date');
+  _el.textContent = _dateStr;
+  _el.style.cssText = 'font-family:var(--font-display);font-weight:600;font-size:12px;color:var(--text);letter-spacing:.01em';
+  populateFilters();
+  initMontosFilters();
+  applyFilters();
+  renderMontos();
+}
+
+function populateFilters() {
+  const ORDER = ["MAY 2026","JUN 2026"];
+  const meses  = [...new Set(ALL.map(t=>t.mes))].sort((a,b)=>ORDER.indexOf(a)-ORDER.indexOf(b));
+  const lineas = [...new Set(ALL.map(t=>t.linea))].sort();
+  const resps  = [...new Set(ALL.flatMap(t=>t.a))].filter(Boolean).sort();
+  const fM = document.getElementById('f-mes');
+  meses.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;fM.appendChild(o)});
+  const fL = document.getElementById('f-linea');
+  lineas.forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=l;fL.appendChild(o)});
+  const fR = document.getElementById('f-resp');
+  resps.forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;fR.appendChild(o)});
+}
+
+function applyFilters() {
+  const srch  = document.getElementById('f-search').value.toLowerCase();
+  const mes   = document.getElementById('f-mes').value;
+  const linea = document.getElementById('f-linea').value;
+  const tipo  = document.getElementById('f-tipo').value;
+  const est   = document.getElementById('f-estado').value;
+  const resp  = document.getElementById('f-resp').value;
+
+  filtered = ALL.filter(t => {
+    if(activeMes && t.mes !== activeMes) return false;
+    if(srch && !t.n.toLowerCase().includes(srch) && !t.linea.toLowerCase().includes(srch)) return false;
+    if(mes && t.mes !== mes) return false;
+    if(linea && t.linea !== linea) return false;
+    if(tipo === 'Impuesto' && t.tt !== 'Impuesto') return false;
+    if(tipo === 'Tarea' && t.tt === 'Impuesto') return false;
+    if(est && t.s !== est) return false;
+    if(resp && !t.a.includes(resp)) return false;
+    return true;
+  });
+  sortData(); page = 1; renderAll();
+}
+
+function sortData() {
+  filtered.sort((a,b)=>{
+    let va = a[sortField], vb = b[sortField];
+    if(sortField==='dd'){va=va||9e15;vb=vb||9e15}
+    if(typeof va==='string') return sortAsc?va.localeCompare(vb):vb.localeCompare(va);
+    return sortAsc?va-vb:vb-va;
+  });
+}
+function sortBy(f){
+  if(sortField===f)sortAsc=!sortAsc; else{sortField=f;sortAsc=true}
+  sortData(); renderTable();
+  document.querySelectorAll('thead th').forEach(th=>th.classList.remove('sorted'));
+}
+function changePage(d){
+  const max=Math.max(1,Math.ceil(filtered.length/PG));
+  page=Math.max(1,Math.min(max,page+d)); renderTable();
+}
+function filterByMonth(m){
+  activeMes = activeMes===m?null:m;
+  document.querySelectorAll('.month-cell').forEach(c=>c.classList.toggle('active',c.dataset.mes===activeMes));
+  applyFilters();
+}
+function resetFilters(){
+  ['f-search','f-mes','f-linea','f-tipo','f-estado','f-resp'].forEach(id=>{
+    const el=document.getElementById(id); el.value='';
+  });
+  activeMes=null;
+  document.querySelectorAll('.month-cell').forEach(c=>c.classList.remove('active'));
+  applyFilters();
+}
+
+// ── Render all ──
+function renderAll(){ renderKPIs(); renderPaySplit(); renderBars(); renderMonths(); renderTable(); }
+
+function renderKPIs(){
+  const d=filtered, tot=d.length;
+  const done=d.filter(x=>x.s==='completado').length;
+  const todo=d.filter(x=>x.s!=='completado').length;
+  const imp=d.filter(x=>x.tt==='Impuesto').length;
+  const tar=d.filter(x=>x.tt!=='Impuesto').length;
+  document.getElementById('k-total').textContent=tot;
+  document.getElementById('k-impuesto').textContent=imp;
+  document.getElementById('k-tarea').textContent=tar;
+  document.getElementById('k-done').textContent=done;
+  document.getElementById('k-done-pct').textContent=tot?Math.round(done/tot*100)+'% del total':'—';
+  document.getElementById('k-todo').textContent=todo;
+  document.getElementById('filter-count').textContent=`${tot} de ${ALL.length}`;
+}
+
+function renderPaySplit(){
+  const d=filtered;
+  const iA=d.filter(x=>x.tt==='Impuesto'), tA=d.filter(x=>x.tt!=='Impuesto');
+  document.getElementById('p-imp-total').textContent=iA.length;
+  document.getElementById('p-imp-done').textContent=iA.filter(x=>x.s==='completado').length+' completadas';
+  document.getElementById('p-imp-todo').textContent=iA.filter(x=>x.s!=='completado').length+' por hacer';
+  document.getElementById('p-tar-total').textContent=tA.length;
+  document.getElementById('p-tar-done').textContent=tA.filter(x=>x.s==='completado').length+' completadas';
+  document.getElementById('p-tar-todo').textContent=tA.filter(x=>x.s!=='completado').length+' por hacer';
+}
+
+const LCOLORS = {
+  'CERVECENTRO':'#82b0f5','CONECTIUM':'#c084fc','PANGEATECH':'#34d1bf',
+  'SINAPSIS':'#fb923c','CELUPAGO':'#fbbf24','BEVCRAFT DISTRIBUIDORA':'#a3e635',
+  'EMPOWER HEALTH':'#38d9a9','ANDROMEDA':'#7a8099',
+};
+
+function renderBars(){
+  // Líneas de negocio — solo valores oficiales del campo ClickUp
+  const lc={};
+  filtered.forEach(t=>{
+    if(!lc[t.linea])lc[t.linea]={imp:0,tar:0};
+    t.tt==='Impuesto'?lc[t.linea].imp++:lc[t.linea].tar++;
+  });
+  const ls=Object.entries(lc).map(([k,v])=>({name:k,tot:v.imp+v.tar,imp:v.imp,tar:v.tar}))
+            .sort((a,b)=>b.tot-a.tot);
+  const mx=ls[0]?.tot||1;
+  document.getElementById('bars-linea').innerHTML=ls.map(r=>`
+    <div class="hbar-row">
+      <span class="hbar-name" title="${r.name}">${r.name}</span>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(r.tot/mx*100)}%;background:${LCOLORS[r.name]||'#7a8099'}"></div></div>
+      <div class="hbar-count-split"><span class="hbar-imp">${r.imp}</span><span style="color:var(--dim)">+</span><span class="hbar-tar">${r.tar}</span></div>
+    </div>`).join('');
+
+  // Responsables
+  const rc={};
+  filtered.forEach(t=>{ t.a.forEach(r=>{rc[r]=(rc[r]||0)+1}); if(!t.a.length)rc['Sin asignar']=(rc['Sin asignar']||0)+1; });
+  const rs=Object.entries(rc).sort((a,b)=>b[1]-a[1]);
+  const mr=rs[0]?.[1]||1;
+  document.getElementById('bars-resp').innerHTML=rs.map(([n,c])=>`
+    <div class="hbar-row">
+      <span class="hbar-name" title="${n}">${n}</span>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(c/mr*100)}%;background:#5b8df6"></div></div>
+      <div class="hbar-count-split"><span style="font-size:11px;color:var(--dim)">${c}</span></div>
+    </div>`).join('');
+}
+
+function renderMonths(){
+  const ORDER=["MAY 2026","JUN 2026"];
+  const mc={};
+  ALL.forEach(t=>{ if(!mc[t.mes])mc[t.mes]={tot:0,done:0,imp:0}; mc[t.mes].tot++; if(t.s==='completado')mc[t.mes].done++; if(t.tt==='Impuesto')mc[t.mes].imp++; });
+  const mx=Math.max(...Object.values(mc).map(v=>v.tot));
+  document.getElementById('month-row').innerHTML=ORDER.filter(m=>mc[m]).map(m=>{
+    const v=mc[m];
+    const pct=mx?Math.round(v.tot/mx*100):0;
+    const dp=v.tot?Math.round(v.done/v.tot*100):0;
+    const isA=activeMes===m;
+    return `<div class="month-cell ${isA?'active':''}" data-mes="${m}" onclick="filterByMonth('${m}')">
+      <div class="mc-name">${m}</div>
+      <div class="mc-total" style="color:${dp===100?'#38d9a9':dp>50?'#f8a832':'#eef0f6'}">${v.tot}</div>
+      <div class="mc-sub">${v.done}✓ · ${v.imp}💳</div>
+      <div class="mc-bar" style="background:linear-gradient(90deg,#5b8df6 ${pct}%,var(--surface2) ${pct}%)"></div>
+    </div>`;
+  }).join('');
+}
+
+function fmtDate(ts){
+  if(!ts)return '—';
+  const d=new Date(ts);
+  return `${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${d.getUTCFullYear()}`;
+}
+
+function renderTable(){
+  const tot=Math.max(1,Math.ceil(filtered.length/PG));
+  page=Math.min(page,tot);
+  const sl=filtered.slice((page-1)*PG, page*PG);
+  document.getElementById('pg-info').textContent=`Pág. ${page} / ${tot} · ${filtered.length} resultados`;
+  document.getElementById('pg-prev').disabled=page<=1;
+  document.getElementById('pg-next').disabled=page>=tot;
+  const now=TODAY.getTime(), wk=now+7*86400000;
+  if(!sl.length){
+    document.getElementById('tabla-body').innerHTML=`<tr><td colspan="9"><div class="empty">◌ Sin resultados para los filtros seleccionados.</div></td></tr>`;
+    return;
+  }
+  const srcMap={seniat:'SENIAT',alcaldia:'Alcaldía',fonacit:'FONACIT',directo:'Directo'};
+  const srcClr={seniat:'#f8a832',alcaldia:'#c084fc',fonacit:'#34d1bf',directo:'#7a8099'};
+  document.getElementById('tabla-body').innerHTML=sl.map(t=>{
+    const nom=t.n.length>52?t.n.slice(0,52)+'…':t.n;
+    const dc= t.dd&&t.dd<now&&t.s!=='completado'?'expired':t.dd&&t.dd<=wk&&t.s!=='completado'?'soon':'';
+    const sb= t.s==='completado'
+      ?`<span class="pill" style="background:rgba(56,217,169,.12);color:#5ae0c0;border:1px solid rgba(56,217,169,.25)"><span class="pill-dot" style="background:#38d9a9"></span>Completado</span>`
+      :t.s==='haciendo'
+      ?`<span class="pill" style="background:rgba(167,139,250,.12);color:#bf9ffc;border:1px solid rgba(167,139,250,.25)"><span class="pill-dot" style="background:#a78bfa"></span>Haciendo</span>`
+      :t.dd&&t.dd<now
+      ?`<span class="pill" style="background:rgba(240,92,110,.12);color:#f47885;border:1px solid rgba(240,92,110,.25)"><span class="pill-dot" style="background:#f05c6e"></span>Vencida</span>`
+      :`<span class="pill" style="background:rgba(248,168,50,.12);color:#fabb57;border:1px solid rgba(248,168,50,.25)"><span class="pill-dot" style="background:#f8a832"></span>Por hacer</span>`;
+    const tb= t.tt==='Impuesto'
+      ?`<span class="pill" style="background:rgba(91,141,246,.15);color:#7ba8f8;border:1px solid rgba(91,141,246,.3)">💳 IMPUESTO</span>`
+      :`<span class="pill" style="background:rgba(56,217,169,.1);color:#5ae0c0;border:1px solid rgba(56,217,169,.2)">☑ TAREA</span>`;
+    const srcB=`<span style="font-size:9px;color:${srcClr[t.src]||'#7a8099'}">${srcMap[t.src]||t.src}</span>`;
+    return `<tr>
+      <td class="td-name"><span class="td-name-text" title="${t.n}">${nom}</span></td>
+      <td style="color:${LCOLORS[t.linea]||'#7a8099'};font-size:11px;white-space:nowrap">${t.linea}</td>
+      <td class="td-tipo">${t.tipoImp}</td>
+      <td style="color:var(--muted);font-size:11px">${t.mes}</td>
+      <td class="td-date ${dc}" style="font-size:11px;white-space:nowrap">${fmtDate(t.dd)}</td>
+      <td class="td-resp">${t.a[0]||'Sin asignar'}</td>
+      <td>${sb}</td>
+      <td>${tb}</td>
+      <td>${srcB}</td>
+    </tr>`;
+  }).join('');
+}
+
+init();
+</script>
+</body>
+</html>
