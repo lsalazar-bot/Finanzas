@@ -83,9 +83,6 @@
   .hbar-name{width:165px;flex-shrink:0;color:var(--muted);font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .hbar-track{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
   .hbar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.4,0,.2,1)}
-  .hbar-count-split{display:flex;gap:5px;align-items:center;min-width:58px;justify-content:flex-end}
-  .hbar-imp{font-size:12px;color:var(--accent);font-weight:700;font-family:var(--font-display)}
-  .hbar-tar{font-size:12px;color:var(--accent2);font-weight:700;font-family:var(--font-display)}
 
   /* FILTERS */
   .filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.35rem}
@@ -938,11 +935,9 @@ function renderMontos() {
 
 
 function init() {
-  const _now = new Date();
-  const _opts = {day:'2-digit', month:'short', year:'numeric'};
-  const _dateStr = _now.toLocaleDateString('es-VE', _opts);
+  // Fecha de última actualización — se actualiza cada vez que se regenera el reporte
   const _el = document.getElementById('now-date');
-  _el.textContent = _dateStr;
+  _el.textContent = '10 jun. 2026';
   _el.style.cssText = 'font-family:var(--font-display);font-weight:600;font-size:12px;color:var(--text);letter-spacing:.01em';
   populateFilters();
   initMontosFilters();
@@ -1063,11 +1058,11 @@ function renderPaySplit(){
   const d=filtered;
   const iA=d.filter(x=>x.tt==='Impuesto'), tA=d.filter(x=>x.tt!=='Impuesto');
   document.getElementById('p-imp-total').textContent=iA.length;
-  document.getElementById('p-imp-done').textContent=iA.filter(x=>x.s==='completado').length+' completadas';
-  document.getElementById('p-imp-todo').textContent=iA.filter(x=>x.s!=='completado').length+' por hacer';
+  document.getElementById('p-imp-done').textContent=iA.filter(x=>x.s==='completado').length;
+  document.getElementById('p-imp-todo').textContent=iA.filter(x=>x.s!=='completado').length;
   document.getElementById('p-tar-total').textContent=tA.length;
-  document.getElementById('p-tar-done').textContent=tA.filter(x=>x.s==='completado').length+' completadas';
-  document.getElementById('p-tar-todo').textContent=tA.filter(x=>x.s!=='completado').length+' por hacer';
+  document.getElementById('p-tar-done').textContent=tA.filter(x=>x.s==='completado').length;
+  document.getElementById('p-tar-todo').textContent=tA.filter(x=>x.s!=='completado').length;
 }
 
 const LCOLORS = {
@@ -1090,7 +1085,7 @@ function renderBars(){
     <div class="hbar-row">
       <span class="hbar-name" title="${r.name}">${r.name}</span>
       <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(r.tot/mx*100)}%;background:${LCOLORS[r.name]||'#7a8099'}"></div></div>
-      <div class="hbar-count-split"><span class="hbar-imp">${r.imp}</span><span style="color:var(--dim)">+</span><span class="hbar-tar">${r.tar}</span></div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);min-width:32px;text-align:right">${r.tot}</div>
     </div>`).join('');
 
 }
